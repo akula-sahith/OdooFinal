@@ -36,11 +36,13 @@ public class SalesTeam {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         SalesTeam salesTeam = (SalesTeam) o;
         return Objects.equals(id, salesTeam.id) &&
-               Objects.equals(name, salesTeam.name);
+                Objects.equals(name, salesTeam.name);
     }
 
     @Override
@@ -51,8 +53,8 @@ public class SalesTeam {
     @Override
     public String toString() {
         return "SalesTeam{" +
-               "id=" + id +
-               ", name='" + name + '\'' +
-               '}';
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }
