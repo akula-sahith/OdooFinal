@@ -1,39 +1,43 @@
 import React from 'react';
-import { Shield, Building2 } from 'lucide-react';
+import { ShieldCheck, Building2 } from 'lucide-react';
 
-export const AuthHeader = ({ portal, title, subtitle }) => {
+export const AuthHeader = ({ portal = 'unified', title, subtitle }) => {
   const isCustomer = portal === 'customer';
+
+  const badgeLabel = isCustomer
+    ? 'B2B Client Portal'
+    : 'Unified Enterprise Portal';
 
   const defaultSubtitle = isCustomer
     ? 'Access your B2B account, manage quotations, and collaborate with your team.'
-    : 'Authorized company personnel portal for operations and client management.';
+    : 'Centralized authentication portal for corporate personnel, sales management, and enterprise clients.';
 
   return (
-    <header className="w-full text-left space-y-2 sm:space-y-3">
-      {/* Brand / Security Badge */}
-      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100/90 border border-slate-200/80 text-xs font-semibold text-slate-700">
+    <header className="w-full text-left space-y-4 sm:space-y-5">
+      {/* Universal Portal Security Badge */}
+      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100/90 border border-slate-200/90 text-[11px] font-bold text-slate-600 shadow-2xs">
         {isCustomer ? (
-          <Building2 className="w-3.5 h-3.5 text-blue-600" />
+          <Building2 className="w-3 h-3 text-blue-600" />
         ) : (
-          <Shield className="w-3.5 h-3.5 text-[#714B67]" />
+          <ShieldCheck className="w-3 h-3 text-[#714B67]" />
         )}
-        <span>{isCustomer ? 'B2B Client Portal' : 'Internal Staff Entry'}</span>
+        <span>{badgeLabel}</span>
       </div>
 
-      {/* PROMINENT HANDWRITTEN TITLE — INCREASED SIZING */}
+      {/* Extra Large Handwritten Heading & Spaced Subtitle */}
       <div>
         <h1
-          className={`inline-block font-handwritten font-bold text-3xl sm:text-4xl md:text-5xl lg:text-5xl tracking-wide py-0.5 leading-tight ${
+          className={`inline-block font-handwritten font-bold text-5xl sm:text-6xl md:text-7xl lg:text-7xl tracking-wide py-1 leading-tight ${
             isCustomer
               ? 'text-blue-700 handwritten-underline handwritten-underline-blue'
               : 'text-[#714B67] handwritten-underline handwritten-underline-purple'
           }`}
         >
-          {title || (isCustomer ? 'Customer Portal Access' : 'Internal Company Portal')}
+          {title || 'DealFlow360 Platform'}
         </h1>
 
-        {/* Hidden on mobile phones for cleaner layout alignment */}
-        <p className="hidden sm:block text-sm sm:text-base text-slate-600 font-medium leading-relaxed mt-2.5">
+        {/* Generous spacing between handwritten heading and subtitle text below */}
+        <p className="mt-4 sm:mt-5 text-xs sm:text-sm text-slate-500 font-medium leading-relaxed max-w-md">
           {subtitle || defaultSubtitle}
         </p>
       </div>
@@ -41,3 +45,4 @@ export const AuthHeader = ({ portal, title, subtitle }) => {
   );
 };
 
+export default AuthHeader;

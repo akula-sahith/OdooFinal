@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Tag, Hash, Calendar, Save, X, AlertCircle, DollarSign } from 'lucide-react';
+import { Tag, Hash, Calendar, Save, X, AlertCircle, DollarSign, Activity } from 'lucide-react';
 import { Input } from '../../../components/ui/Input/Input';
 import { Textarea } from '../../../components/ui/Textarea/Textarea';
 import { Select } from '../../../components/ui/Select/Select';
@@ -19,11 +19,18 @@ export const PriceListForm = ({
   onSubmit,
   onCancel,
   isSaving = false,
+  isSubmitting = false,
   serverError = null,
+  serverErrors = null,
   serverFieldErrors = {},
   isEditMode = false,
   onDirtyChange,
+  submitLabel,
 }) => {
+  const savingState = isSaving || isSubmitting;
+  const activeServerError = serverError || (typeof serverErrors === 'string' ? serverErrors : null);
+  const activeFieldErrors = serverFieldErrors || (typeof serverErrors === 'object' ? serverErrors : {});
+
   const [formData, setFormData] = useState({
     name: initialValues.name || '',
     code: initialValues.code || '',
@@ -52,10 +59,10 @@ export const PriceListForm = ({
   }, [initialValues]);
 
   useEffect(() => {
-    if (serverFieldErrors && Object.keys(serverFieldErrors).length > 0) {
-      setErrors((prev) => ({ ...prev, ...serverFieldErrors }));
+    if (activeFieldErrors && Object.keys(activeFieldErrors).length > 0) {
+      setErrors((prev) => ({ ...prev, ...activeFieldErrors }));
     }
-  }, [serverFieldErrors]);
+  }, [activeFieldErrors]);
 
   const handleChange = (field, value) => {
     const updated = { ...formData, [field]: value };
@@ -121,13 +128,13 @@ export const PriceListForm = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 text-left" noValidate>
-      {serverError && (
+      {activeServerError && (
         <Alert variant="danger" icon={AlertCircle} title="Price List Save Failed">
-          {serverError}
+          {activeServerError}
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
         {/* Name */}
         <Input
           label="Price List Name"
@@ -138,7 +145,7 @@ export const PriceListForm = ({
           required
           placeholder="e.g. Standard Commercial Price List 2026"
           leadingIcon={Tag}
-          disabled={isSaving}
+          disabled={savingState}
         />
 
         {/* Code */}
@@ -152,11 +159,11 @@ export const PriceListForm = ({
           placeholder="e.g. PL-STD-2026"
           leadingIcon={Hash}
           helperText="Unique commercial identifier code."
-          disabled={isSaving}
+          disabled={savingState}
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
         {/* Currency Selector */}
         <Select
           label="Currency"
@@ -166,7 +173,7 @@ export const PriceListForm = ({
           error={touched.currency ? errors.currency : undefined}
           required
           leadingIcon={DollarSign}
-          disabled={isSaving}
+          disabled={savingState}
         />
 
         {/* Status Selector */}
@@ -177,12 +184,13 @@ export const PriceListForm = ({
           options={statusOptions}
           error={touched.status ? errors.status : undefined}
           required
-          disabled={isSaving}
+          leadingIcon={Activity}
+          disabled={savingState}
         />
       </div>
 
       {/* Date Range: Effective From & Effective To */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
         <Input
           type="date"
           label="Effective From"
@@ -192,7 +200,7 @@ export const PriceListForm = ({
           error={touched.effective_from ? errors.effective_from : undefined}
           leadingIcon={Calendar}
           helperText="Start date for pricing validity (optional)."
-          disabled={isSaving}
+          disabled={savingState}
         />
 
         <Input
@@ -204,7 +212,7 @@ export const PriceListForm = ({
           error={touched.effective_to ? errors.effective_to : undefined}
           leadingIcon={Calendar}
           helperText="End date for pricing validity (Effective To >= Effective From)."
-          disabled={isSaving}
+          disabled={savingState}
         />
       </div>
 
@@ -218,16 +226,16 @@ export const PriceListForm = ({
         placeholder="Provide notes regarding target market segments, contract terms, or commercial scope..."
         rows={3}
         maxLength={500}
-        disabled={isSaving}
+        disabled={savingState}
       />
 
       {/* Action Controls */}
-      <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+      <div className="flex items-center justify-end gap-3 pt-5 border-t border-slate-200/80">
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
-          disabled={isSaving}
+          disabled={savingState}
           className="border-slate-300 text-slate-700 hover:bg-slate-50"
         >
           <X className="w-4 h-4 mr-1.5" />
@@ -236,12 +244,12 @@ export const PriceListForm = ({
 
         <Button
           type="submit"
-          disabled={isSaving}
-          isLoading={isSaving}
+          disabled={savingState}
+          isLoading={savingState}
           className="bg-[#714B67] hover:bg-[#5A3B52] text-white shadow-xs"
         >
           <Save className="w-4 h-4 mr-1.5" />
-          {isSaving ? 'Saving...' : isEditMode ? 'Save Changes' : 'Create Price List'}
+          {submitLabel || (savingState ? 'Saving...' : isEditMode ? 'Save Changes' : 'Create Price List')}
         </Button>
       </div>
     </form>

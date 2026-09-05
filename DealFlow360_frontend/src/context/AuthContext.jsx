@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }) => {
       if (session.user) {
         setUser(session.user);
         setSessionState('AUTHENTICATED');
-        return true;
+        return session.user;
       }
       return false;
     } catch (err) {
@@ -126,11 +126,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Signup Customer
+  // Signup Customer (Creates Customer role account)
   const signupCustomer = async (data) => {
     setError(null);
     try {
-      return await authService.signupCustomer(data);
+      const session = await authService.signupCustomer(data);
+      if (session?.user) {
+        setUser(session.user);
+        setSessionState('AUTHENTICATED');
+        return session.user;
+      }
+      return true;
     } catch (err) {
       setError(err);
       throw err;

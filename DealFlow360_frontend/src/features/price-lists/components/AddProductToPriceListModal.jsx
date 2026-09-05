@@ -16,6 +16,7 @@ import { formatCurrency } from '../../../constants/currency';
 export const AddProductToPriceListModal = ({
   isOpen = false,
   onClose,
+  onSubmit,
   onAddProduct,
   existingItems = [],
   currency = 'USD',
@@ -66,7 +67,7 @@ export const AddProductToPriceListModal = ({
   }, [isOpen]);
 
   const existingProductIds = new Set(
-    existingItems.map((i) => i.product_id || i.product?.id)
+    existingItems.map((i) => i.productId || i.product_id || i.product?.id)
   );
 
   const productOptions = products.map((p) => ({
@@ -92,18 +93,19 @@ export const AddProductToPriceListModal = ({
       return;
     }
 
-    if (existingProductIds.has(formData.product_id)) {
+    const selectedProduct = products.find((p) => p.id === formData.product_id);
+    const targetProductId = selectedProduct ? selectedProduct.id : formData.product_id;
+
+    if (existingProductIds.has(targetProductId)) {
       setErrors((prev) => ({ ...prev, product_id: 'This product is already in the price list.' }));
       return;
     }
 
-    const selectedProd = products.find((p) => p.id === formData.product_id);
-
-    if (onAddProduct) {
-      onAddProduct({
-        product_id: formData.product_id,
-        product: selectedProd,
-        base_price: Number(formData.base_price),
+    const submitHandler = onSubmit || onAddProduct;
+    if (submitHandler) {
+      submitHandler({
+        productId: targetProductId,
+        basePrice: Number(formData.base_price),
       });
     }
   };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ChevronLeft,
@@ -13,10 +13,16 @@ import { usePermissions } from '../../../hooks/auth/usePermissions';
 import { useAuth } from '../../../hooks/auth/useAuth';
 
 export const Sidebar = ({ collapsed, onToggleCollapse, onItemClick }) => {
+  const navigate = useNavigate();
   const { user, permissions, role } = usePermissions();
   const { logout } = useAuth();
 
   const navSections = getAuthorizedNavigation(permissions);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   return (
     <aside
@@ -24,13 +30,12 @@ export const Sidebar = ({ collapsed, onToggleCollapse, onItemClick }) => {
         collapsed ? 'w-20' : 'w-72'
       }`}
     >
-      {/* Brand Header — Increased Height & Clean Logo (No Green, No Shield Icon) */}
+      {/* Brand Header */}
       <div className="h-20 px-5 flex items-center justify-between border-b border-slate-200/80 shrink-0">
         <Link
           to="/company/dashboard"
           className="flex items-center gap-3 overflow-hidden focus:outline-none"
         >
-          {/* Corporate Brand Initial Badge (No Shield, No Green Outline) */}
           <div className="w-10 h-10 rounded-xl bg-[#714B67] text-white flex items-center justify-center font-extrabold text-sm tracking-widest shrink-0 shadow-sm">
             DF
           </div>
@@ -71,13 +76,13 @@ export const Sidebar = ({ collapsed, onToggleCollapse, onItemClick }) => {
         ))}
       </div>
 
-      {/* User Profile & Logout Bottom Bar (No Green Borders) */}
+      {/* User Profile & Logout Bottom Bar */}
       <div className="p-4 border-t border-slate-200/80 bg-slate-50/50 shrink-0">
         {!collapsed ? (
           <div className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-full bg-[#714B67] text-white font-bold flex items-center justify-center shrink-0 text-xs border border-slate-200">
-                {user?.fullName?.charAt(0) || user?.email?.charAt(0) || <UserIcon className="w-4 h-4" />}
+                {user?.fullName?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || <UserIcon className="w-4 h-4" />}
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-xs font-bold text-slate-900 truncate">
@@ -91,7 +96,7 @@ export const Sidebar = ({ collapsed, onToggleCollapse, onItemClick }) => {
 
             <button
               type="button"
-              onClick={logout}
+              onClick={handleLogout}
               className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
               title="Sign out of company workspace"
               aria-label="Logout"
@@ -102,7 +107,7 @@ export const Sidebar = ({ collapsed, onToggleCollapse, onItemClick }) => {
         ) : (
           <button
             type="button"
-            onClick={logout}
+            onClick={handleLogout}
             className="w-full py-2.5 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
             title="Sign out"
             aria-label="Logout"

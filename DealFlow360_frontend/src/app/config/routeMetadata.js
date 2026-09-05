@@ -9,6 +9,28 @@ export const routeMetadataMap = {
     breadcrumb: [{ label: 'Company', path: '/company/dashboard' }, { label: 'Dashboard' }],
     permission: 'dashboard.view',
   },
+  '/company/sales/dashboard': {
+    title: 'Salesperson Workspace Dashboard',
+    subtitle: 'Track assigned requirement requests, active clarifications, and requirement confirmations.',
+    breadcrumb: [{ label: 'Sales Workspace', path: '/company/sales/dashboard' }, { label: 'Dashboard' }],
+    permission: 'requests.view',
+  },
+  '/company/sales/requests': {
+    title: 'Requirement Requests Workspace',
+    subtitle: 'Review customer commercial requests, initiate clarifications, and confirm requirements.',
+    breadcrumb: [{ label: 'Sales Workspace', path: '/company/sales/dashboard' }, { label: 'Requirement Requests' }],
+    permission: 'requests.view',
+  },
+  '/company/sales/requests/:id': {
+    title: 'Requirement Request Detail',
+    subtitle: 'Inspect customer specifications, communicate in real-time, and manage requirement lifecycle.',
+    breadcrumb: [
+      { label: 'Sales Workspace', path: '/company/sales/dashboard' },
+      { label: 'Requests', path: '/company/sales/requests' },
+      { label: 'Request Detail' },
+    ],
+    permission: 'requests.view',
+  },
   '/company/customers': {
     title: 'Customer Accounts',
     subtitle: 'Manage enterprise B2B accounts, procurement contacts, and billing limits.',
@@ -31,6 +53,16 @@ export const routeMetadataMap = {
     breadcrumb: [{ label: 'Company', path: '/company/dashboard' }, { label: 'Staff Users' }],
     permission: 'users.view',
   },
+  '/company/users/new': {
+    title: 'Provision Staff User',
+    subtitle: 'Create a new internal staff member profile and assign a security role identity.',
+    breadcrumb: [
+      { label: 'Company', path: '/company/dashboard' },
+      { label: 'Staff Users', path: '/company/users' },
+      { label: 'Provision User' },
+    ],
+    permission: 'users.create',
+  },
   '/company/users/:id': {
     title: 'Staff Member Profile',
     subtitle: 'Detailed permissions, assigned accounts, and security logs for staff.',
@@ -41,11 +73,31 @@ export const routeMetadataMap = {
     ],
     permission: 'users.view',
   },
+  '/company/users/:id/edit': {
+    title: 'Edit Staff Profile',
+    subtitle: 'Update staff profile details, role identity assignment, or access governance status.',
+    breadcrumb: [
+      { label: 'Company', path: '/company/dashboard' },
+      { label: 'Staff Users', path: '/company/users' },
+      { label: 'Edit Profile' },
+    ],
+    permission: 'users.update',
+  },
   '/company/roles': {
     title: 'Roles & Access Control',
     subtitle: 'Role-based access control (RBAC) definitions and permission matrices.',
     breadcrumb: [{ label: 'Company', path: '/company/dashboard' }, { label: 'Roles & Permissions' }],
     permission: 'roles.view',
+  },
+  '/company/roles/new': {
+    title: 'Create Security Role',
+    subtitle: 'Define a new RBAC security role and assign fine-grained action capabilities.',
+    breadcrumb: [
+      { label: 'Company', path: '/company/dashboard' },
+      { label: 'Roles', path: '/company/roles' },
+      { label: 'Create Role' },
+    ],
+    permission: 'roles.create',
   },
   '/company/roles/:id': {
     title: 'Role Specification',
@@ -56,6 +108,26 @@ export const routeMetadataMap = {
       { label: 'Specification' },
     ],
     permission: 'roles.view',
+  },
+  '/company/roles/:id/edit': {
+    title: 'Edit Security Role',
+    subtitle: 'Modify security role details, description, or assigned capability matrix.',
+    breadcrumb: [
+      { label: 'Company', path: '/company/dashboard' },
+      { label: 'Roles', path: '/company/roles' },
+      { label: 'Edit Role' },
+    ],
+    permission: 'roles.update',
+  },
+  '/company/permissions': {
+    title: 'Permission Reference Catalogue',
+    subtitle: 'Centralized master repository of fine-grained capability tokens governing DealFlow360 RBAC policy.',
+    breadcrumb: [
+      { label: 'Company', path: '/company/dashboard' },
+      { label: 'Roles', path: '/company/roles' },
+      { label: 'Permission Catalogue' },
+    ],
+    permission: 'permissions.view',
   },
   '/company/products': {
     title: 'Product Catalog',
@@ -89,26 +161,98 @@ export const routeMetadataMap = {
     ],
     permission: 'pricing.view',
   },
+  '/company/discount-tiers': {
+    title: 'Discount Tiers Governance',
+    subtitle: 'Configure permitted discount percentages, role-based thresholds, and approval escalation tiers.',
+    breadcrumb: [{ label: 'Company', path: '/company/dashboard' }, { label: 'Discount Tiers' }],
+    permission: 'discounts.view',
+  },
+  '/company/discount-tiers/new': {
+    title: 'Create Discount Tier',
+    subtitle: 'Define a new discount threshold rule, permitted percentage bounds, and required approval role.',
+    breadcrumb: [
+      { label: 'Company', path: '/company/dashboard' },
+      { label: 'Discount Tiers', path: '/company/discount-tiers' },
+      { label: 'Create Tier' },
+    ],
+    permission: 'discounts.create',
+  },
+  '/company/discount-tiers/:id': {
+    title: 'Discount Tier Specifications',
+    subtitle: 'Detailed view of discount threshold parameters, approval escalation rules, and status.',
+    breadcrumb: [
+      { label: 'Company', path: '/company/dashboard' },
+      { label: 'Discount Tiers', path: '/company/discount-tiers' },
+      { label: 'Tier Specifications' },
+    ],
+    permission: 'discounts.view',
+  },
+  '/company/discount-tiers/:id/edit': {
+    title: 'Edit Discount Tier',
+    subtitle: 'Modify governance thresholds, approval level, or active dates for discount tier rule.',
+    breadcrumb: [
+      { label: 'Company', path: '/company/dashboard' },
+      { label: 'Discount Tiers', path: '/company/discount-tiers' },
+      { label: 'Edit Tier' },
+    ],
+    permission: 'discounts.update',
+  },
+  '/company/approval-chain': {
+    title: 'Approval Chain Governance',
+    subtitle: 'Configure discount escalation thresholds, authorized review roles, and multi-tier approval sequence.',
+    breadcrumb: [{ label: 'Company', path: '/company/dashboard' }, { label: 'Approval Chain' }],
+    permission: 'approvals.view',
+  },
   '/company/quotations': {
-    title: 'Sales Quotations',
-    subtitle: 'Draft, pending, and approved B2B sales proposals and discount requests.',
+    title: 'Sales Quotations Workspace',
+    subtitle: 'Draft commercial proposals, associate price list catalogs, and track proposal governance.',
     breadcrumb: [{ label: 'Company', path: '/company/dashboard' }, { label: 'Quotations' }],
     permission: 'quotations.view',
   },
-  '/company/quotations/:id': {
-    title: 'Quotation Review',
-    subtitle: 'Line item breakdown, approval workflow status, and customer agreement link.',
+  '/company/quotations/new': {
+    title: 'Draft Sales Quotation',
+    subtitle: 'Select confirmed customer requirement, associate commercial price list, and specify line items.',
     breadcrumb: [
       { label: 'Company', path: '/company/dashboard' },
       { label: 'Quotations', path: '/company/quotations' },
-      { label: 'Proposal Detail' },
+      { label: 'Create Quotation' },
+    ],
+    permission: 'quotations.create',
+  },
+  '/company/quotations/:id': {
+    title: 'Sales Quotation Detail',
+    subtitle: 'Inspect commercial proposal line items, customer specifications, and preliminary totals.',
+    breadcrumb: [
+      { label: 'Company', path: '/company/dashboard' },
+      { label: 'Quotations', path: '/company/quotations' },
+      { label: 'Quotation Detail' },
     ],
     permission: 'quotations.view',
   },
+  '/company/quotations/:id/edit': {
+    title: 'Edit Draft Quotation',
+    subtitle: 'Modify line items, quantities, proposal title, or validity period for draft proposal.',
+    breadcrumb: [
+      { label: 'Company', path: '/company/dashboard' },
+      { label: 'Quotations', path: '/company/quotations' },
+      { label: 'Edit Draft' },
+    ],
+    permission: 'quotations.update',
+  },
   '/company/approvals': {
-    title: 'Approval Queue',
-    subtitle: 'Pending discount exceptions, credit limit extensions, and high-value orders.',
+    title: 'Proposal Approval Workspace',
+    subtitle: 'Review commercial proposals, authorize discount exceptions, or request revisions.',
     breadcrumb: [{ label: 'Company', path: '/company/dashboard' }, { label: 'Approvals' }],
+    permission: 'approvals.view',
+  },
+  '/company/approvals/:id': {
+    title: 'Commercial Proposal Approval Review',
+    subtitle: 'Inspect submitted commercial specifications, governance risk classification, and execute decision.',
+    breadcrumb: [
+      { label: 'Company', path: '/company/dashboard' },
+      { label: 'Approvals', path: '/company/approvals' },
+      { label: 'Approval Review' },
+    ],
     permission: 'approvals.view',
   },
   '/company/orders': {

@@ -36,6 +36,10 @@ export const Input = forwardRef(({
     statusBorderClasses = 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/15';
   }
 
+  // Calculate dynamic left and right padding to prevent icon & text overlap
+  const leftPaddingClass = LeadingIcon ? 'pl-10.5 sm:pl-11' : 'pl-3.5 sm:pl-4';
+  const rightPaddingClass = (TrailingIcon || isLoading || error || success) ? 'pr-10 sm:pr-10.5' : 'pr-3.5 sm:pr-4';
+
   return (
     <div className={`w-full space-y-1.5 text-left ${containerClassName}`}>
       {label && (
@@ -46,8 +50,8 @@ export const Input = forwardRef(({
 
       <div className="relative rounded-xl shadow-xs">
         {LeadingIcon && (
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-            <LeadingIcon className="w-4 h-4" />
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 z-10">
+            <LeadingIcon className="w-4 h-4 shrink-0 text-slate-400" />
           </div>
         )}
 
@@ -59,13 +63,11 @@ export const Input = forwardRef(({
           readOnly={readOnly}
           aria-invalid={!!error}
           aria-describedby={error ? errorId : helperText ? helperId : undefined}
-          className={`w-full h-10 sm:h-11 px-3.5 sm:px-4 text-sm text-slate-900 bg-white border rounded-xl placeholder-slate-400 font-medium transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-60 disabled:bg-slate-100 disabled:cursor-not-allowed read-only:bg-slate-50 read-only:cursor-default ${
-            LeadingIcon ? 'pl-10' : ''
-          } ${TrailingIcon || isLoading || error || success ? 'pr-10' : ''} ${statusBorderClasses} ${className}`}
+          className={`w-full h-10 sm:h-11 ${leftPaddingClass} ${rightPaddingClass} text-sm text-slate-900 bg-white border rounded-xl placeholder:text-slate-400 font-medium transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-60 disabled:bg-slate-100 disabled:cursor-not-allowed read-only:bg-slate-50 read-only:cursor-default ${statusBorderClasses} ${className}`}
           {...props}
         />
 
-        <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center gap-1.5">
+        <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center gap-1.5 z-10">
           {isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
           ) : error ? (
@@ -79,7 +81,7 @@ export const Input = forwardRef(({
               onClick={onTrailingIconClick}
               className={`text-slate-400 hover:text-slate-600 ${onTrailingIconClick ? 'cursor-pointer' : 'pointer-events-none'}`}
             >
-              <TrailingIcon className="w-4 h-4" />
+              <TrailingIcon className="w-4 h-4 shrink-0" />
             </button>
           ) : null}
         </div>

@@ -91,28 +91,35 @@ export const PriceListItemTable = ({
       sortable: false,
       headerClassName: 'text-right',
       className: 'text-right',
-      render: (_, row) => (
-        <div className="flex items-center justify-end gap-1 select-none" onClick={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            onClick={() => onEditPrice && onEditPrice(row)}
-            className="p-1.5 text-slate-400 hover:text-[#714B67] hover:bg-[#F7F2F5] rounded-lg transition-colors cursor-pointer"
-            title="Edit Base Price"
-            aria-label={`Edit price for ${row.product?.name || row.name}`}
-          >
-            <Edit3 className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => onRemoveItem && onRemoveItem(row)}
-            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-            title="Remove Product from Price List"
-            aria-label={`Remove ${row.product?.name || row.name}`}
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      ),
+      render: (_, row) => {
+        if (!onEditPrice && !onRemoveItem) return null;
+        return (
+          <div className="flex items-center justify-end gap-1 select-none" onClick={(e) => e.stopPropagation()}>
+            {onEditPrice && (
+              <button
+                type="button"
+                onClick={() => onEditPrice(row)}
+                className="p-1.5 text-slate-400 hover:text-[#714B67] hover:bg-[#F7F2F5] rounded-lg transition-colors cursor-pointer"
+                title="Edit Base Price"
+                aria-label={`Edit price for ${row.product?.name || row.name}`}
+              >
+                <Edit3 className="w-4 h-4" />
+              </button>
+            )}
+            {onRemoveItem && (
+              <button
+                type="button"
+                onClick={() => onRemoveItem(row)}
+                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                title="Remove Product from Price List"
+                aria-label={`Remove ${row.product?.name || row.name}`}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        );
+      },
     },
   ];
 

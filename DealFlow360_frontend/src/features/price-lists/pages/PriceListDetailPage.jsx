@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Plus, Calendar, Tag, Info, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Edit, Plus, Calendar, Tag, Info } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/PageHeader/PageHeader';
 import { Card } from '../../../components/ui/Card/Card';
 import { Button } from '../../../components/ui/Button/Button';
@@ -9,6 +9,7 @@ import { ConfirmationDialog } from '../../../components/dialogs/ConfirmationDial
 import { TableSkeleton } from '../../../components/feedback/Skeleton/TableSkeleton';
 import { ErrorState } from '../../../components/feedback/ErrorState/ErrorState';
 import { useToast } from '../../../components/feedback/Toast';
+import { usePermissions } from '../../../hooks/auth/usePermissions';
 import { usePriceList } from '../hooks/usePriceList';
 import { usePriceListItems } from '../hooks/usePriceListItems';
 import { PriceListItemTable } from '../components/PriceListItemTable';
@@ -21,6 +22,11 @@ export const PriceListDetailPage = () => {
   const { priceListId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const { hasPermission } = usePermissions();
+
+  const canCreate = hasPermission('pricing.create');
+  const canUpdate = hasPermission('pricing.update');
+  const canManageStatus = hasPermission('pricing.manage_status');
 
   // Price List Header & Metadata state
   const {
@@ -75,7 +81,7 @@ export const PriceListDetailPage = () => {
 
   // Add Product Item Submit
   const handleAddProductSubmit = async ({ productId, basePrice }) => {
-    const result = await addItem(productId, basePrice);
+    const result = await addItem({ productId, basePrice });
     if (result.success) {
       toast.success('Product added to price list successfully.');
       setIsAddModalOpen(false);
@@ -89,7 +95,7 @@ export const PriceListDetailPage = () => {
 
   // Edit Product Base Price Submit
   const handleEditPriceSubmit = async ({ itemId, basePrice }) => {
-    const result = await updateItemPrice(itemId, basePrice);
+    const result = await updateItemPrice({ itemId, basePrice });
     if (result.success) {
       toast.success('Base price updated successfully.');
       setEditingItem(null);
@@ -175,28 +181,34 @@ export const PriceListDetailPage = () => {
               Back
             </Button>
 
-            <Button
-              variant={priceList.status === 'ACTIVE' ? 'outline' : 'secondary'}
-              onClick={() => setStatusModalOpen(true)}
-            >
-              {priceList.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
-            </Button>
+            {canManageStatus && (
+              <Button
+                variant={priceList.status === 'ACTIVE' ? 'outline' : 'secondary'}
+                onClick={() => setStatusModalOpen(true)}
+              >
+                {priceList.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+              </Button>
+            )}
 
-            <Button
-              variant="outline"
-              leadingIcon={Edit}
-              onClick={() => navigate(`/company/price-lists/${priceListId}/edit`)}
-            >
-              Edit Header
-            </Button>
+            {canUpdate && (
+              <Button
+                variant="outline"
+                leadingIcon={Edit}
+                onClick={() => navigate(`/company/price-lists/${priceListId}/edit`)}
+              >
+                Edit Header
+              </Button>
+            )}
 
-            <Button
-              variant="primary"
-              leadingIcon={Plus}
-              onClick={() => setIsAddModalOpen(true)}
-            >
-              Add Product
-            </Button>
+            {canUpdate && (
+              <Button
+                variant="primary"
+                leadingIcon={Plus}
+                onClick={() => setIsAddModalOpen(true)}
+              >
+                Add Product
+              </Button>
+            )}
           </div>
         }
       />
@@ -276,14 +288,16 @@ export const PriceListDetailPage = () => {
             </p>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            leadingIcon={Plus}
-            onClick={() => setIsAddModalOpen(true)}
-          >
-            Add Product Item
-          </Button>
+          {canUpdate && (
+            <Button
+              variant="outline"
+              size="sm"
+              leadingIcon={Plus}
+              onClick={() => setIsAddModalOpen(true)}
+            >
+              Add Product Item
+            </Button>
+          )}
         </div>
 
         <PriceListItemTable
@@ -292,8 +306,8 @@ export const PriceListDetailPage = () => {
           isLoading={isItemsLoading}
           error={itemsError}
           onRetry={refetchItems}
-          onEditPrice={(item) => setEditingItem(item)}
-          onRemoveItem={(item) => setDeletingItem(item)}
+          onEditPrice={canUpdate ? (item) => setEditingItem(item) : undefined}
+          onRemoveItem={canUpdate ? (item) => setDeletingItem(item) : undefined}
         />
       </Card>
 

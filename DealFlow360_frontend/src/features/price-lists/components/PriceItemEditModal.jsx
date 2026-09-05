@@ -14,6 +14,7 @@ import { validatePriceListItem } from '../validation/priceListItemValidation';
 export const PriceItemEditModal = ({
   isOpen = false,
   onClose,
+  onSubmit,
   onSave,
   item = null,
   currency = 'USD',
@@ -25,14 +26,15 @@ export const PriceItemEditModal = ({
 
   useEffect(() => {
     if (isOpen && item) {
-      setBasePrice(item.base_price !== undefined ? String(item.base_price) : '');
+      const currentPrice = item.basePrice !== undefined ? item.basePrice : item.base_price;
+      setBasePrice(currentPrice !== undefined && currentPrice !== null ? String(currentPrice) : '');
       setError(null);
     }
   }, [isOpen, item]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const product_id = item?.product_id || item?.product?.id || 'exist';
+    const product_id = item?.productId || item?.product_id || item?.product?.id || 'exist';
     const { isValid, errors } = validatePriceListItem({ product_id, base_price: basePrice });
 
     if (!isValid) {
@@ -40,8 +42,12 @@ export const PriceItemEditModal = ({
       return;
     }
 
-    if (onSave && item) {
-      onSave(item.id, { base_price: Number(basePrice) });
+    const submitHandler = onSubmit || onSave;
+    if (submitHandler && item) {
+      submitHandler({
+        itemId: item.id,
+        basePrice: Number(basePrice),
+      });
     }
   };
 

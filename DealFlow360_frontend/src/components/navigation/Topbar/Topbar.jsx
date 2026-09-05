@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Menu, Search, Command } from 'lucide-react';
 import { Breadcrumbs } from '../Breadcrumbs/Breadcrumbs';
 import { UserMenu } from './UserMenu';
-import { NotificationButton } from './NotificationButton';
+import { NotificationBell } from '../../../features/notifications/components/NotificationBell';
 import { useAuth } from '../../../hooks/auth/useAuth';
 
 export const Topbar = ({ onOpenMobileNav }) => {
@@ -51,42 +51,7 @@ export const Topbar = ({ onOpenMobileNav }) => {
           </div>
         </form>
 
-        <NotificationButton unreadCount={0} />
-
-        {/* Quick Role Switcher (Admin / Manager / Salesperson) */}
-        <div className="hidden xl:flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200/80 text-[11px] font-bold">
-          <span className="text-slate-400 px-2 text-[10px] uppercase font-extrabold tracking-wider">Role:</span>
-          <button
-            type="button"
-            onClick={() => switchRole('Admin')}
-            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-              role === 'Admin' ? 'bg-[#714B67] text-white shadow-xs font-extrabold' : 'text-slate-600 hover:bg-slate-200/70'
-            }`}
-            title="Switch to System Admin role"
-          >
-            Admin
-          </button>
-          <button
-            type="button"
-            onClick={() => switchRole('Sales Manager')}
-            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-              role === 'Sales Manager' ? 'bg-[#714B67] text-white shadow-xs font-extrabold' : 'text-slate-600 hover:bg-slate-200/70'
-            }`}
-            title="Switch to Sales Manager role"
-          >
-            Manager
-          </button>
-          <button
-            type="button"
-            onClick={() => switchRole('Salesperson')}
-            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-              role === 'Salesperson' ? 'bg-[#714B67] text-white shadow-xs font-extrabold' : 'text-slate-600 hover:bg-slate-200/70'
-            }`}
-            title="Switch to Salesperson role"
-          >
-            Sales
-          </button>
-        </div>
+        <NotificationBell userType="SALESPERSON" />
 
         <div className="h-6 w-px bg-slate-200 mx-1 hidden sm:block" />
 

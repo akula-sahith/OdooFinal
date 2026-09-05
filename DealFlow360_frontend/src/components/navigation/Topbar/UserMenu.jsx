@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Shield, Sliders, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../../hooks/auth/useAuth';
 
 export const UserMenu = () => {
+  const navigate = useNavigate();
   const { user, role, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
@@ -19,6 +20,12 @@ export const UserMenu = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleLogout = async () => {
+    setIsOpen(false);
+    await logout();
+    navigate('/login');
+  };
+
   return (
     <div className="relative" ref={menuRef}>
       <button
@@ -29,12 +36,12 @@ export const UserMenu = () => {
         aria-haspopup="true"
       >
         <div className="w-9 h-9 rounded-full bg-[#714B67] text-white font-bold text-xs flex items-center justify-center shadow-2xs border border-slate-200">
-          {user?.fullName?.charAt(0) || 'U'}
+          {user?.fullName?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || 'U'}
         </div>
 
         <div className="hidden sm:flex flex-col text-left">
           <span className="text-xs font-bold text-slate-900 leading-tight">
-            {user?.fullName || 'Rahul Kumar'}
+            {user?.fullName || 'Company Staff'}
           </span>
           <span className="text-[10px] font-semibold text-[#714B67]">
             {role || 'Company Staff'}
@@ -56,7 +63,7 @@ export const UserMenu = () => {
             {/* User Details */}
             <div className="px-4 py-2.5 border-b border-slate-100">
               <p className="text-xs font-bold text-slate-900 truncate">
-                {user?.fullName || 'Rahul Kumar'}
+                {user?.fullName || 'Company Staff'}
               </p>
               <p className="text-[11px] text-slate-500 font-medium truncate">
                 {user?.email || 'staff@company.com'}
@@ -74,7 +81,7 @@ export const UserMenu = () => {
                 className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-[#F7F2F5] hover:text-[#714B67] transition-colors"
               >
                 <User className="w-3.5 h-3.5 text-slate-400" />
-                <span>My Profile (Read-Only)</span>
+                <span>My Profile</span>
               </Link>
 
               <Link
@@ -100,10 +107,7 @@ export const UserMenu = () => {
             <div className="pt-1 border-t border-slate-100">
               <button
                 type="button"
-                onClick={() => {
-                  setIsOpen(false);
-                  logout();
-                }}
+                onClick={handleLogout}
                 className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
@@ -116,3 +120,5 @@ export const UserMenu = () => {
     </div>
   );
 };
+
+export default UserMenu;
