@@ -8,6 +8,7 @@ import {
   Receipt,
   CreditCard,
   FileText,
+  MessageSquare,
   Bell,
   User,
 } from 'lucide-react';
@@ -52,6 +53,12 @@ export const CUSTOMER_NAV_ITEMS = [
     label: 'Payments',
     route: '/customer/payments',
     icon: CreditCard,
+  },
+  {
+    id: 'messages',
+    label: 'Messages',
+    route: '/customer/messages',
+    icon: MessageSquare,
   },
   {
     id: 'requests',

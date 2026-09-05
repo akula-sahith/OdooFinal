@@ -24,6 +24,7 @@ import { CustomerOrderListPage } from '../../features/customer-account/pages/Cus
 import { CustomerOrderDetailPage } from '../../features/customer-account/pages/CustomerOrderDetailPage';
 import { CustomerShipmentListPage } from '../../features/customer-account/pages/CustomerShipmentListPage';
 import { CustomerShipmentDetailPage } from '../../features/customer-account/pages/CustomerShipmentDetailPage';
+import { CustomerMessagesPage } from '../../features/customer-account/pages/CustomerMessagesPage';
 
 // Customer Requirement Requests & Communication (Phase 9.2)
 import { CustomerRequestsPage } from '../../features/customer-requests/pages/CustomerRequestsPage';
@@ -97,6 +98,7 @@ import { PermissionPage } from '../../features/permissions/pages/PermissionPage'
 import { SalespersonDashboardPage } from '../../features/salesperson/pages/SalespersonDashboardPage';
 import { SalespersonRequestsPage } from '../../features/salesperson/pages/SalespersonRequestsPage';
 import { SalespersonRequestDetailPage } from '../../features/salesperson/pages/SalespersonRequestDetailPage';
+import { SalespersonMessagesPage } from '../../features/salesperson/pages/SalespersonMessagesPage';
 
 // Phase 12 — Inventory & Warehouse Management
 import { InventoryDashboardPage } from '../../features/inventory/pages/InventoryDashboardPage';
@@ -182,8 +184,11 @@ export const AppRouter = () => {
         <Route path="requests" element={<CustomerRequestsPage />} />
         <Route path="requests/new" element={<CustomerCreateRequestPage />} />
         <Route path="requests/:requestId" element={<CustomerRequestDetailPage />} />
+        <Route path="messages" element={<CustomerMessagesPage />} />
+        <Route path="messages/:conversationId" element={<CustomerMessagesPage />} />
         <Route path="notifications" element={<NotificationsPage userType="CUSTOMER" />} />
-        <Route path="conversations" element={<CustomerConversationsPlaceholder />} />
+        <Route path="notifications/:notificationId" element={<NotificationsPage userType="CUSTOMER" />} />
+        <Route path="conversations" element={<CustomerMessagesPage />} />
         <Route path="quotations" element={<CustomerQuotationPage />} />
         <Route path="quotations/:quotationId" element={<CustomerQuotationDetailPage />} />
         <Route path="orders" element={<CustomerOrderListPage />} />
@@ -259,12 +264,36 @@ export const AppRouter = () => {
           }
         />
         <Route
+          path="messages"
+          element={
+            <ProtectedCompanyRoute>
+              <SalespersonMessagesPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="messages/:conversationId"
+          element={
+            <ProtectedCompanyRoute>
+              <SalespersonMessagesPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
           path="sales/conversations/:conversationId"
-          element={<Navigate to="/company/sales/requests" replace />}
+          element={<Navigate to="/company/messages" replace />}
         />
 
         <Route
           path="notifications"
+          element={
+            <ProtectedCompanyRoute>
+              <NotificationsPage userType="SALESPERSON" />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="notifications/:notificationId"
           element={
             <ProtectedCompanyRoute>
               <NotificationsPage userType="SALESPERSON" />

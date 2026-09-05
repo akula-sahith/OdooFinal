@@ -12,8 +12,10 @@ import {
   CheckCircle2,
   AlertCircle,
   FileText,
+  MessageSquare,
 } from 'lucide-react';
 import { useCustomerOrder } from '../hooks/useCustomerOrder';
+import { communicationService } from '../../conversations/services/communicationService';
 import { OrderTimeline } from '../components/OrderTimeline';
 import { CustomerOrderSummary } from '../components/CustomerOrderSummary';
 import { ShipmentTrackingCard } from '../components/ShipmentTrackingCard';
@@ -112,6 +114,20 @@ export const CustomerOrderDetailPage = () => {
             </p>
           </div>
         </div>
+
+        <button
+          type="button"
+          onClick={async () => {
+            const conv = await communicationService.getOrCreateConversation('ORDER', orderId, {
+              customerId: 'CUST-001',
+              customerName: customerName,
+            });
+            navigate(`/customer/messages/${conv.id}`);
+          }}
+          className="px-3.5 py-2 text-xs font-bold bg-[#714B67] hover:bg-[#56384E] text-white rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+        >
+          <MessageSquare className="w-3.5 h-3.5" /> Message Sales Representative
+        </button>
       </div>
 
       {/* Overview Metadata Bar */}

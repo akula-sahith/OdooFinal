@@ -1,73 +1,41 @@
 import { useState, useEffect, useCallback } from 'react';
-import { conversationService } from '../services/conversationService';
+import { communicationService } from '../services/communicationService';
 
-/**
- * Custom Hook for managing Customer ↔ Salesperson Conversation history and message submission.
- */
-export const useConversation = (requestId, currentUser = null, userType = 'CUSTOMER') => {
+export const useConversation = (conversationId, contextInfo = null) => {
   const [conversation, setConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchConversation = useCallback(async () => {
-    if (!requestId) {
+    if (!conversationId && (!contextInfo || !contextInfo.contextType || !contextInfo.contextId)) {
       setLoading(false);
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      const data = await conversationService.getConversation(requestId);
+      let data;
+      if (conversationId) {
+        data = await communicationService.getConversationById(conversationId);
+      } else if (contextInfo) {
+        data = await communicationService.getOrCreateConversation(
+          contextInfo.contextType,
+          contextInfo.contextId,
+          contextInfo.details
+        );
+      }
       setConversation(data);
-      setMessages(data.messages || []);
-      // Automatically mark unread messages from the other party as read
-      await conversationService.markConversationAsRead(requestId, userType);
     } catch (err) {
-      console.error('[useConversation] Failed to fetch conversation:', err);
-      setError(err.message || 'Failed to load conversation history.');
+      console.error('Failed loading conversation:', err);
+      setError(err.message || 'Conversation thread not found or access denied.');
     } finally {
       setLoading(false);
     }
-  }, [requestId, userType]);
+  }, [conversationId, contextInfo]);
 
   useEffect(() => {
     fetchConversation();
   }, [fetchConversation]);
 
-  const sendMessage = async (content) => {
-    if (!conversation) return { success: false, error: 'No active conversation session.' };
-    setSending(true);
-    try {
-      const senderInfo = {
-        senderType: userType,
-        senderName:
-          currentUser?.fullName ||
-          currentUser?.name ||
-          currentUser?.email ||
-          (userType === 'SALESPERSON' ? 'Sales Engineer' : 'Customer Representative'),
-      };
-
-      const newMsg = await conversationService.sendMessage(conversation.id, content, senderInfo);
-      setMessages((prev) => [...prev, newMsg]);
-      setSending(false);
-      return { success: true, data: newMsg };
-    } catch (err) {
-      setSending(false);
-      return { success: false, error: err.message || 'Failed to send message.' };
-    }
-  };
-
-  return {
-    conversation,
-    messages,
-    loading,
-    sending,
-    error,
-    refetch: fetchConversation,
-    sendMessage,
-  };
+  return { conversation, loading, error, refetch: fetchConversation };
 };
-
-export default useConversation;
