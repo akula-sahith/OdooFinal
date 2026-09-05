@@ -1,14 +1,29 @@
 package com.odoo.DealFlow360.product;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Business service handling ProductVariant domain validation and operations.
  */
 @Service
 public class ProductVariantService {
+
+    private final ProductVariantRepository variantRepository;
+
+    public ProductVariantService() {
+        this.variantRepository = null;
+    }
+
+    @Autowired
+    public ProductVariantService(ProductVariantRepository variantRepository) {
+        this.variantRepository = variantRepository;
+    }
 
     /**
      * Validates domain constraints on a ProductVariant entity.
@@ -47,4 +62,55 @@ public class ProductVariantService {
         validateVariant(variant);
         return variant;
     }
+
+    /**
+     * Persists a ProductVariant entity after validation.
+     */
+    public ProductVariant saveVariant(ProductVariant variant) {
+        validateVariant(variant);
+        if (variantRepository != null) {
+            return variantRepository.save(variant);
+        }
+        return variant;
+    }
+
+    /**
+     * Finds a ProductVariant by ID.
+     */
+    public Optional<ProductVariant> findVariantById(Long id) {
+        if (variantRepository != null && id != null) {
+            return variantRepository.findById(id);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Finds all ProductVariants for a Product ID.
+     */
+    public List<ProductVariant> findVariantsByProductId(Long productId) {
+        if (variantRepository != null && productId != null) {
+            return variantRepository.findByProductId(productId);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Retrieves all ProductVariants.
+     */
+    public List<ProductVariant> findAllVariants() {
+        if (variantRepository != null) {
+            return variantRepository.findAll();
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Deletes a ProductVariant by ID.
+     */
+    public void deleteVariant(Long id) {
+        if (variantRepository != null && id != null) {
+            variantRepository.deleteById(id);
+        }
+    }
 }
+

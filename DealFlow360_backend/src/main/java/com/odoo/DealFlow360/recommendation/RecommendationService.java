@@ -1,5 +1,6 @@
 package com.odoo.DealFlow360.recommendation;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -9,6 +10,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -17,6 +19,17 @@ import java.util.stream.Collectors;
  */
 @Service
 public class RecommendationService {
+
+    private final UpsellRuleRepository ruleRepository;
+
+    public RecommendationService() {
+        this.ruleRepository = null;
+    }
+
+    @Autowired
+    public RecommendationService(UpsellRuleRepository ruleRepository) {
+        this.ruleRepository = ruleRepository;
+    }
 
     /**
      * Validates domain constraints on an UpsellRule.
@@ -57,6 +70,56 @@ public class RecommendationService {
         );
         validateUpsellRule(rule);
         return rule;
+    }
+
+    /**
+     * Persists an UpsellRule entity after validation.
+     */
+    public UpsellRule saveUpsellRule(UpsellRule rule) {
+        validateUpsellRule(rule);
+        if (ruleRepository != null) {
+            return ruleRepository.save(rule);
+        }
+        return rule;
+    }
+
+    /**
+     * Finds an UpsellRule by ID.
+     */
+    public Optional<UpsellRule> findUpsellRuleById(Long id) {
+        if (ruleRepository != null && id != null) {
+            return ruleRepository.findById(id);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Finds all UpsellRules associated with a Base Product ID.
+     */
+    public List<UpsellRule> findUpsellRulesByBaseProductId(Long baseProductId) {
+        if (ruleRepository != null && baseProductId != null) {
+            return ruleRepository.findByBaseProductId(baseProductId);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Retrieves all UpsellRules.
+     */
+    public List<UpsellRule> findAllUpsellRules() {
+        if (ruleRepository != null) {
+            return ruleRepository.findAll();
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Deletes an UpsellRule by ID.
+     */
+    public void deleteUpsellRule(Long id) {
+        if (ruleRepository != null && id != null) {
+            ruleRepository.deleteById(id);
+        }
     }
 
     /**
@@ -151,3 +214,4 @@ public class RecommendationService {
                 .collect(Collectors.toList());
     }
 }
+

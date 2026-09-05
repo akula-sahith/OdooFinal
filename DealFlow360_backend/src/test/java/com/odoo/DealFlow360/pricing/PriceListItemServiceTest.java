@@ -56,4 +56,24 @@ class PriceListItemServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Minimum quantity must be a positive integer");
     }
+
+    @Test
+    @DisplayName("Should delegate item save and find to repository when injected")
+    void testPriceListItemRepositoryDelegation() {
+        PriceListItemRepository repository = org.mockito.Mockito.mock(PriceListItemRepository.class);
+        PriceListItemService service = new PriceListItemService(repository);
+
+        PriceListItem item = new PriceListItem(null, 100L, 10L, null, new BigDecimal("150.00"), 1);
+        PriceListItem savedItem = new PriceListItem(1L, 100L, 10L, null, new BigDecimal("150.00"), 1);
+        org.mockito.Mockito.when(repository.save(item)).thenReturn(savedItem);
+        org.mockito.Mockito.when(repository.findById(1L)).thenReturn(java.util.Optional.of(savedItem));
+
+        PriceListItem resultSave = service.savePriceListItem(item);
+        assertThat(resultSave.getId()).isEqualTo(1L);
+
+        java.util.Optional<PriceListItem> resultFind = service.findPriceListItemById(1L);
+        assertThat(resultFind).isPresent();
+        assertThat(resultFind.get().getUnitPrice()).isEqualTo(new BigDecimal("150.00"));
+    }
 }
+

@@ -74,4 +74,45 @@ class ProductServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Product currency cannot be null or blank");
     }
+
+    @Test
+    @DisplayName("Should delegate category save and find to category repository when injected")
+    void testCategoryRepositoryDelegation() {
+        ProductCategoryRepository categoryRepo = org.mockito.Mockito.mock(ProductCategoryRepository.class);
+        ProductRepository productRepo = org.mockito.Mockito.mock(ProductRepository.class);
+        ProductService service = new ProductService(categoryRepo, productRepo);
+
+        ProductCategory category = new ProductCategory(null, "Hardware");
+        ProductCategory savedCategory = new ProductCategory(1L, "Hardware");
+        org.mockito.Mockito.when(categoryRepo.save(category)).thenReturn(savedCategory);
+        org.mockito.Mockito.when(categoryRepo.findById(1L)).thenReturn(java.util.Optional.of(savedCategory));
+
+        ProductCategory resultSave = service.saveProductCategory(category);
+        assertThat(resultSave.getId()).isEqualTo(1L);
+
+        java.util.Optional<ProductCategory> resultFind = service.findProductCategoryById(1L);
+        assertThat(resultFind).isPresent();
+        assertThat(resultFind.get().getName()).isEqualTo("Hardware");
+    }
+
+    @Test
+    @DisplayName("Should delegate product save and find to product repository when injected")
+    void testProductRepositoryDelegation() {
+        ProductCategoryRepository categoryRepo = org.mockito.Mockito.mock(ProductCategoryRepository.class);
+        ProductRepository productRepo = org.mockito.Mockito.mock(ProductRepository.class);
+        ProductService service = new ProductService(categoryRepo, productRepo);
+
+        Product product = new Product(null, "Laptop", 1L, new BigDecimal("500.00"), BigDecimal.ZERO, "USD", false);
+        Product savedProduct = new Product(10L, "Laptop", 1L, new BigDecimal("500.00"), BigDecimal.ZERO, "USD", false);
+        org.mockito.Mockito.when(productRepo.save(product)).thenReturn(savedProduct);
+        org.mockito.Mockito.when(productRepo.findById(10L)).thenReturn(java.util.Optional.of(savedProduct));
+
+        Product resultSave = service.saveProduct(product);
+        assertThat(resultSave.getId()).isEqualTo(10L);
+
+        java.util.Optional<Product> resultFind = service.findProductById(10L);
+        assertThat(resultFind).isPresent();
+        assertThat(resultFind.get().getName()).isEqualTo("Laptop");
+    }
 }
+

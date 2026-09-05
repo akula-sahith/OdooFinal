@@ -1,14 +1,29 @@
 package com.odoo.DealFlow360.pricing;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Business service handling PriceList domain validation and validity checking.
  */
 @Service
 public class PriceListService {
+
+    private final PriceListRepository priceListRepository;
+
+    public PriceListService() {
+        this.priceListRepository = null;
+    }
+
+    @Autowired
+    public PriceListService(PriceListRepository priceListRepository) {
+        this.priceListRepository = priceListRepository;
+    }
 
     /**
      * Validates domain constraints on a PriceList entity.
@@ -48,6 +63,56 @@ public class PriceListService {
     }
 
     /**
+     * Persists a PriceList entity after validation.
+     */
+    public PriceList savePriceList(PriceList priceList) {
+        validatePriceList(priceList);
+        if (priceListRepository != null) {
+            return priceListRepository.save(priceList);
+        }
+        return priceList;
+    }
+
+    /**
+     * Finds a PriceList by ID.
+     */
+    public Optional<PriceList> findPriceListById(Long id) {
+        if (priceListRepository != null && id != null) {
+            return priceListRepository.findById(id);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Finds all PriceLists matching a Discount Tier ID.
+     */
+    public List<PriceList> findPriceListsByDiscountTierId(Long discountTierId) {
+        if (priceListRepository != null && discountTierId != null) {
+            return priceListRepository.findByDiscountTierId(discountTierId);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Retrieves all PriceLists.
+     */
+    public List<PriceList> findAllPriceLists() {
+        if (priceListRepository != null) {
+            return priceListRepository.findAll();
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Deletes a PriceList by ID.
+     */
+    public void deletePriceList(Long id) {
+        if (priceListRepository != null && id != null) {
+            priceListRepository.deleteById(id);
+        }
+    }
+
+    /**
      * Determines whether a PriceList is active at a given requested instant.
      *
      * Implementation Policy / Convention:
@@ -76,3 +141,4 @@ public class PriceListService {
         return true;
     }
 }
+

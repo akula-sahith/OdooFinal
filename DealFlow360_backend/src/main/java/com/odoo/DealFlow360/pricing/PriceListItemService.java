@@ -1,14 +1,29 @@
 package com.odoo.DealFlow360.pricing;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Business service handling PriceListItem validation and domain operations.
  */
 @Service
 public class PriceListItemService {
+
+    private final PriceListItemRepository itemRepository;
+
+    public PriceListItemService() {
+        this.itemRepository = null;
+    }
+
+    @Autowired
+    public PriceListItemService(PriceListItemRepository itemRepository) {
+        this.itemRepository = itemRepository;
+    }
 
     /**
      * Validates domain constraints on a PriceListItem entity.
@@ -51,4 +66,75 @@ public class PriceListItemService {
         validatePriceListItem(item);
         return item;
     }
+
+    /**
+     * Persists a PriceListItem entity after validation.
+     */
+    public PriceListItem savePriceListItem(PriceListItem item) {
+        validatePriceListItem(item);
+        if (itemRepository != null) {
+            return itemRepository.save(item);
+        }
+        return item;
+    }
+
+    /**
+     * Finds a PriceListItem by ID.
+     */
+    public Optional<PriceListItem> findPriceListItemById(Long id) {
+        if (itemRepository != null && id != null) {
+            return itemRepository.findById(id);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Finds all PriceListItems for a Price List ID.
+     */
+    public List<PriceListItem> findPriceListItemsByPriceListId(Long priceListId) {
+        if (itemRepository != null && priceListId != null) {
+            return itemRepository.findByPriceListId(priceListId);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Finds all PriceListItems for a Product ID.
+     */
+    public List<PriceListItem> findPriceListItemsByProductId(Long productId) {
+        if (itemRepository != null && productId != null) {
+            return itemRepository.findByProductId(productId);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Finds PriceListItems matching both Price List ID and Product ID.
+     */
+    public List<PriceListItem> findPriceListItemsByPriceListIdAndProductId(Long priceListId, Long productId) {
+        if (itemRepository != null && priceListId != null && productId != null) {
+            return itemRepository.findByPriceListIdAndProductId(priceListId, productId);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Retrieves all PriceListItems.
+     */
+    public List<PriceListItem> findAllPriceListItems() {
+        if (itemRepository != null) {
+            return itemRepository.findAll();
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Deletes a PriceListItem by ID.
+     */
+    public void deletePriceListItem(Long id) {
+        if (itemRepository != null && id != null) {
+            itemRepository.deleteById(id);
+        }
+    }
 }
+

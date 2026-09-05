@@ -1,14 +1,32 @@
 package com.odoo.DealFlow360.product;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Business service handling Product and ProductCategory validation and domain operations.
  */
 @Service
 public class ProductService {
+
+    private final ProductCategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
+
+    public ProductService() {
+        this.categoryRepository = null;
+        this.productRepository = null;
+    }
+
+    @Autowired
+    public ProductService(ProductCategoryRepository categoryRepository, ProductRepository productRepository) {
+        this.categoryRepository = categoryRepository;
+        this.productRepository = productRepository;
+    }
 
     /**
      * Validates a ProductCategory entity.
@@ -34,6 +52,56 @@ public class ProductService {
         ProductCategory category = new ProductCategory(id, name != null ? name.trim() : null);
         validateProductCategory(category);
         return category;
+    }
+
+    /**
+     * Persists a ProductCategory entity after validation.
+     */
+    public ProductCategory saveProductCategory(ProductCategory category) {
+        validateProductCategory(category);
+        if (categoryRepository != null) {
+            return categoryRepository.save(category);
+        }
+        return category;
+    }
+
+    /**
+     * Finds a ProductCategory by ID.
+     */
+    public Optional<ProductCategory> findProductCategoryById(Long id) {
+        if (categoryRepository != null && id != null) {
+            return categoryRepository.findById(id);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Finds a ProductCategory by name.
+     */
+    public Optional<ProductCategory> findProductCategoryByName(String name) {
+        if (categoryRepository != null && name != null) {
+            return categoryRepository.findByName(name);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Retrieves all ProductCategories.
+     */
+    public List<ProductCategory> findAllProductCategories() {
+        if (categoryRepository != null) {
+            return categoryRepository.findAll();
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Deletes a ProductCategory by ID.
+     */
+    public void deleteProductCategory(Long id) {
+        if (categoryRepository != null && id != null) {
+            categoryRepository.deleteById(id);
+        }
     }
 
     /**
@@ -81,4 +149,55 @@ public class ProductService {
         validateProduct(product);
         return product;
     }
+
+    /**
+     * Persists a Product entity after domain validation.
+     */
+    public Product saveProduct(Product product) {
+        validateProduct(product);
+        if (productRepository != null) {
+            return productRepository.save(product);
+        }
+        return product;
+    }
+
+    /**
+     * Finds a Product by ID.
+     */
+    public Optional<Product> findProductById(Long id) {
+        if (productRepository != null && id != null) {
+            return productRepository.findById(id);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Finds all Products belonging to a Category ID.
+     */
+    public List<Product> findProductsByCategoryId(Long categoryId) {
+        if (productRepository != null && categoryId != null) {
+            return productRepository.findByCategoryId(categoryId);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Retrieves all Products.
+     */
+    public List<Product> findAllProducts() {
+        if (productRepository != null) {
+            return productRepository.findAll();
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Deletes a Product by ID.
+     */
+    public void deleteProduct(Long id) {
+        if (productRepository != null && id != null) {
+            productRepository.deleteById(id);
+        }
+    }
 }
+

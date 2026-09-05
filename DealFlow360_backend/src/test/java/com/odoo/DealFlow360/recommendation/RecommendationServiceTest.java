@@ -90,4 +90,24 @@ class RecommendationServiceTest {
         List<RecommendationResult> results = recommendationService.evaluateRecommendations(10L, Collections.emptyList(), new BigDecimal("30.00"));
         assertThat(results).isEmpty();
     }
+
+    @Test
+    @DisplayName("Should delegate upsell rule save and find to repository when injected")
+    void testUpsellRuleRepositoryDelegation() {
+        UpsellRuleRepository repository = org.mockito.Mockito.mock(UpsellRuleRepository.class);
+        RecommendationService service = new RecommendationService(repository);
+
+        UpsellRule rule = new UpsellRule(null, 10L, 20L, true, new BigDecimal("15.00"));
+        UpsellRule savedRule = new UpsellRule(1L, 10L, 20L, true, new BigDecimal("15.00"));
+        org.mockito.Mockito.when(repository.save(rule)).thenReturn(savedRule);
+        org.mockito.Mockito.when(repository.findById(1L)).thenReturn(java.util.Optional.of(savedRule));
+
+        UpsellRule resultSave = service.saveUpsellRule(rule);
+        assertThat(resultSave.getId()).isEqualTo(1L);
+
+        java.util.Optional<UpsellRule> resultFind = service.findUpsellRuleById(1L);
+        assertThat(resultFind).isPresent();
+        assertThat(resultFind.get().getIsPromoted()).isTrue();
+    }
 }
+

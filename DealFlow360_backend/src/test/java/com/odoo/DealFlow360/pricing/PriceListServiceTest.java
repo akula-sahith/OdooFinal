@@ -85,4 +85,24 @@ class PriceListServiceTest {
         // Instant exactly equal to validTo -> active
         assertThat(priceListService.isActive(priceList, to)).isTrue();
     }
+
+    @Test
+    @DisplayName("Should delegate price list save and find to repository when injected")
+    void testPriceListRepositoryDelegation() {
+        PriceListRepository repository = org.mockito.Mockito.mock(PriceListRepository.class);
+        PriceListService service = new PriceListService(repository);
+
+        PriceList priceList = new PriceList(null, 5L, "USD", null, null);
+        PriceList savedPriceList = new PriceList(1L, 5L, "USD", null, null);
+        org.mockito.Mockito.when(repository.save(priceList)).thenReturn(savedPriceList);
+        org.mockito.Mockito.when(repository.findById(1L)).thenReturn(java.util.Optional.of(savedPriceList));
+
+        PriceList resultSave = service.savePriceList(priceList);
+        assertThat(resultSave.getId()).isEqualTo(1L);
+
+        java.util.Optional<PriceList> resultFind = service.findPriceListById(1L);
+        assertThat(resultFind).isPresent();
+        assertThat(resultFind.get().getCurrency()).isEqualTo("USD");
+    }
 }
+

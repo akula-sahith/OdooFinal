@@ -64,4 +64,24 @@ class ProductVariantServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Extra price cannot be null or negative");
     }
+
+    @Test
+    @DisplayName("Should delegate variant save and find to repository when injected")
+    void testVariantRepositoryDelegation() {
+        ProductVariantRepository repository = org.mockito.Mockito.mock(ProductVariantRepository.class);
+        ProductVariantService service = new ProductVariantService(repository);
+
+        ProductVariant variant = new ProductVariant(null, 10L, "Color", "Red", new BigDecimal("5.00"));
+        ProductVariant savedVariant = new ProductVariant(1L, 10L, "Color", "Red", new BigDecimal("5.00"));
+        org.mockito.Mockito.when(repository.save(variant)).thenReturn(savedVariant);
+        org.mockito.Mockito.when(repository.findById(1L)).thenReturn(java.util.Optional.of(savedVariant));
+
+        ProductVariant resultSave = service.saveVariant(variant);
+        assertThat(resultSave.getId()).isEqualTo(1L);
+
+        java.util.Optional<ProductVariant> resultFind = service.findVariantById(1L);
+        assertThat(resultFind).isPresent();
+        assertThat(resultFind.get().getValue()).isEqualTo("Red");
+    }
 }
+
