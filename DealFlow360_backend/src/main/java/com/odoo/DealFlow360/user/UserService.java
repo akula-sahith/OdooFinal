@@ -1,17 +1,33 @@
 package com.odoo.DealFlow360.user;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
- * Business service handling User domain operations, validation, and Sales Team assignment semantics.
+ * Business service handling User domain operations, validation, Sales Team assignment semantics,
+ * and JDBC repository integration.
  */
 @Service
 public class UserService {
 
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+
+    private final UserRepository userRepository;
+
+    public UserService() {
+        this.userRepository = null;
+    }
+
+    @Autowired
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     /**
      * Creates and validates a new User instance.
@@ -142,5 +158,65 @@ public class UserService {
      */
     public boolean isAssignedToTeam(User user) {
         return user != null && user.getTeamId() != null;
+    }
+
+    /**
+     * Persists a User entity after domain validation.
+     */
+    public User saveUser(User user) {
+        validateUser(user);
+        if (userRepository != null) {
+            return userRepository.save(user);
+        }
+        return user;
+    }
+
+    /**
+     * Finds a User by ID using the repository.
+     */
+    public Optional<User> findUserById(Long id) {
+        if (userRepository != null && id != null) {
+            return userRepository.findById(id);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Finds a User by email using the repository.
+     */
+    public Optional<User> findUserByEmail(String email) {
+        if (userRepository != null && email != null) {
+            return userRepository.findByEmail(email);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Finds all Users assigned to a Sales Team using the repository.
+     */
+    public List<User> findUsersByTeamId(Long teamId) {
+        if (userRepository != null && teamId != null) {
+            return userRepository.findByTeamId(teamId);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Retrieves all Users from database.
+     */
+    public List<User> findAllUsers() {
+        if (userRepository != null) {
+            return userRepository.findAll();
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Deletes a User by ID.
+     */
+    public void deleteUser(Long id) {
+        if (userRepository != null && id != null) {
+            userRepository.deleteById(id);
+        }
     }
 }
