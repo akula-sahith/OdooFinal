@@ -93,7 +93,35 @@ import { PermissionPage } from '../../features/permissions/pages/PermissionPage'
 import { SalespersonDashboardPage } from '../../features/salesperson/pages/SalespersonDashboardPage';
 import { SalespersonRequestsPage } from '../../features/salesperson/pages/SalespersonRequestsPage';
 import { SalespersonRequestDetailPage } from '../../features/salesperson/pages/SalespersonRequestDetailPage';
+
+// Phase 12 — Inventory & Warehouse Management
+import { InventoryDashboardPage } from '../../features/inventory/pages/InventoryDashboardPage';
+import { InventoryStockPage } from '../../features/inventory/pages/InventoryStockPage';
+import { InventoryMovementsPage } from '../../features/inventory/pages/InventoryMovementsPage';
+import { InventoryAdjustmentsPage } from '../../features/inventory/pages/InventoryAdjustmentsPage';
+import { LowStockPage } from '../../features/inventory/pages/LowStockPage';
+import { OutOfStockPage } from '../../features/inventory/pages/OutOfStockPage';
+import { WarehouseListPage } from '../../features/inventory/pages/WarehouseListPage';
+import { WarehouseDetailPage } from '../../features/inventory/pages/WarehouseDetailPage';
 import { NotificationsPage } from '../../features/notifications/pages/NotificationsPage';
+
+// Phase 13 — Fulfillment, Packing, Shipping & Delivery
+import { FulfillmentDashboardPage } from '../../features/fulfillment/pages/FulfillmentDashboardPage';
+import { FulfillmentDetailPage } from '../../features/fulfillment/pages/FulfillmentDetailPage';
+import { PickingQueuePage } from '../../features/fulfillment/pages/PickingQueuePage';
+import { PackingQueuePage } from '../../features/fulfillment/pages/PackingQueuePage';
+import { ShipmentListPage } from '../../features/fulfillment/pages/ShipmentListPage';
+import { ShipmentDetailPage } from '../../features/fulfillment/pages/ShipmentDetailPage';
+import { CarrierListPage } from '../../features/fulfillment/pages/CarrierListPage';
+import { CustomerOrderTrackingPage } from '../../features/fulfillment/pages/CustomerOrderTrackingPage';
+
+// Phase 14 — Commercial Invoicing Module
+import { InvoiceListPage } from '../../features/invoices/pages/InvoiceListPage';
+import { InvoiceCreatePage } from '../../features/invoices/pages/InvoiceCreatePage';
+import { InvoiceDetailPage } from '../../features/invoices/pages/InvoiceDetailPage';
+import { InvoiceEditPage } from '../../features/invoices/pages/InvoiceEditPage';
+import { CustomerInvoiceListPage } from '../../features/customer-account/pages/CustomerInvoiceListPage';
+import { CustomerInvoiceDetailPage } from '../../features/customer-account/pages/CustomerInvoiceDetailPage';
 
 // Developer UI System Showcase
 import { UIShowcase } from '../../pages/dev/UIShowcase';
@@ -148,6 +176,9 @@ export const AppRouter = () => {
         <Route path="conversations" element={<CustomerConversationsPlaceholder />} />
         <Route path="quotations" element={<CustomerQuotationPage />} />
         <Route path="quotations/:quotationId" element={<CustomerQuotationDetailPage />} />
+        <Route path="orders/:orderId" element={<CustomerOrderTrackingPage />} />
+        <Route path="invoices" element={<CustomerInvoiceListPage />} />
+        <Route path="invoices/:invoiceId" element={<CustomerInvoiceDetailPage />} />
         <Route path="*" element={<Navigate to="/customer/dashboard" replace />} />
       </Route>
 
@@ -299,6 +330,164 @@ export const AppRouter = () => {
           element={
             <ProtectedCompanyRoute requiredPermission="orders.view">
               <OrderDetailsPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        {/* Phase 12 — Inventory & Warehouse Management */}
+        <Route
+          path="inventory"
+          element={
+            <ProtectedCompanyRoute requiredPermission="inventory.view">
+              <InventoryDashboardPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="inventory/stock"
+          element={
+            <ProtectedCompanyRoute requiredPermission="inventory.view">
+              <InventoryStockPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="inventory/movements"
+          element={
+            <ProtectedCompanyRoute requiredPermission="inventory.view">
+              <InventoryMovementsPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="inventory/adjustments"
+          element={
+            <ProtectedCompanyRoute requiredPermission="inventory.adjust">
+              <InventoryAdjustmentsPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="inventory/low-stock"
+          element={
+            <ProtectedCompanyRoute requiredPermission="inventory.view">
+              <LowStockPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="inventory/out-of-stock"
+          element={
+            <ProtectedCompanyRoute requiredPermission="inventory.view">
+              <OutOfStockPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="inventory/warehouses"
+          element={
+            <ProtectedCompanyRoute requiredPermission="warehouse.view">
+              <WarehouseListPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="inventory/warehouses/:warehouseId"
+          element={
+            <ProtectedCompanyRoute requiredPermission="warehouse.view">
+              <WarehouseDetailPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        {/* Phase 13 — Fulfillment, Packing, Shipping & Delivery */}
+        <Route
+          path="fulfillment"
+          element={
+            <ProtectedCompanyRoute requiredPermission="fulfillment.view">
+              <FulfillmentDashboardPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="fulfillment/picking"
+          element={
+            <ProtectedCompanyRoute requiredPermission="fulfillment.pick">
+              <PickingQueuePage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="fulfillment/packing"
+          element={
+            <ProtectedCompanyRoute requiredPermission="fulfillment.pack">
+              <PackingQueuePage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="fulfillment/shipments"
+          element={
+            <ProtectedCompanyRoute requiredPermission="shipment.view">
+              <ShipmentListPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="fulfillment/shipments/:shipmentId"
+          element={
+            <ProtectedCompanyRoute requiredPermission="shipment.view">
+              <ShipmentDetailPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="fulfillment/carriers"
+          element={
+            <ProtectedCompanyRoute requiredPermission="carrier.view">
+              <CarrierListPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="fulfillment/:fulfillmentId"
+          element={
+            <ProtectedCompanyRoute requiredPermission="fulfillment.view">
+              <FulfillmentDetailPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        {/* Phase 14 — Commercial Invoicing Module */}
+        <Route
+          path="invoices"
+          element={
+            <ProtectedCompanyRoute requiredPermission="invoices.view">
+              <InvoiceListPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="invoices/new"
+          element={
+            <ProtectedCompanyRoute requiredPermission="invoices.create">
+              <InvoiceCreatePage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="invoices/:invoiceId"
+          element={
+            <ProtectedCompanyRoute requiredPermission="invoices.view">
+              <InvoiceDetailPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="invoices/:invoiceId/edit"
+          element={
+            <ProtectedCompanyRoute requiredPermission="invoices.update">
+              <InvoiceEditPage />
             </ProtectedCompanyRoute>
           }
         />

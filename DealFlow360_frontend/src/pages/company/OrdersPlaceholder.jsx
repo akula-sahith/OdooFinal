@@ -6,7 +6,9 @@ import {
   Plus,
   X,
   Trash2,
+  Package,
 } from 'lucide-react';
+import { OrderInventoryPanel } from '../../features/inventory/components/OrderInventoryPanel';
 
 export const OrdersPlaceholder = () => {
   const [orders, setOrders] = useState([]);
@@ -19,6 +21,7 @@ export const OrdersPlaceholder = () => {
     orderTotal: '15000',
     fulfillmentStage: 'Processing',
   });
+  const [selectedOrderForInventory, setSelectedOrderForInventory] = useState(null);
 
   // Load from LocalStorage (ZERO PRE-SEEDED DUMMY DATA)
   useEffect(() => {
@@ -150,13 +153,46 @@ export const OrdersPlaceholder = () => {
                       </td>
                       <td className="py-3 px-4 text-slate-500 font-medium">{o.createdDate}</td>
                       <td className="py-3 px-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(o.id)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedOrderForInventory(o)}
+                            className="px-2.5 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-lg inline-flex items-center gap-1 cursor-pointer"
+                          >
+                            <Package className="w-3.5 h-3.5" /> Check Inventory
+                          </button>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                const { fulfillmentService } = await import('../../features/fulfillment/services/fulfillmentService');
+                                const res = await fulfillmentService.createFulfillment(o);
+                                window.location.href = `/company/fulfillment/${res.fulfillmentId}`;
+                              } catch (e) {
+                                alert(e.message);
+                              }
+                            }}
+                            className="px-2.5 py-1 text-xs font-semibold bg-[#714B67] hover:bg-[#56384E] text-white rounded-lg inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                          >
+                            <Package className="w-3.5 h-3.5 text-white" /> Send to Fulfillment
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              window.location.href = `/company/invoices/new?orderId=${o.id}`;
+                            }}
+                            className="px-2.5 py-1 text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 rounded-lg inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                          >
+                            <ShoppingCart className="w-3.5 h-3.5" /> Generate Invoice
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(o.id)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -183,6 +219,21 @@ export const OrdersPlaceholder = () => {
             >
               <Plus className="w-4 h-4 text-white" /> Create Sales Order
             </button>
+          </div>
+        )}
+
+        {/* Embedded Order Inventory Reservation Panel */}
+        {selectedOrderForInventory && (
+          <div className="pt-4 border-t border-slate-200 relative">
+            <div className="flex justify-end mb-2">
+              <button
+                onClick={() => setSelectedOrderForInventory(null)}
+                className="text-xs font-semibold text-slate-500 hover:text-slate-900 underline cursor-pointer"
+              >
+                Close Inventory Panel
+              </button>
+            </div>
+            <OrderInventoryPanel order={selectedOrderForInventory} />
           </div>
         )}
       </div>
