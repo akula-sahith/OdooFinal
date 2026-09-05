@@ -295,8 +295,11 @@ export const priceListService = {
       console.warn('[priceListService] Backend API offline. Adding item in preview store.');
       const items = mockPriceListItems[priceListId] || [];
 
+      const targetProductId = itemData.productId || itemData.product_id;
+      const targetBasePrice = itemData.basePrice !== undefined ? itemData.basePrice : itemData.base_price;
+
       // Duplicate product check
-      const duplicateProduct = items.some((i) => i.productId === itemData.productId);
+      const duplicateProduct = items.some((i) => (i.productId || i.product_id) === targetProductId);
       if (duplicateProduct) {
         const error = new Error('This product is already included in this price list.');
         error.status = 409;
@@ -306,10 +309,10 @@ export const priceListService = {
       const newItem = {
         id: `pli_${Date.now()}`,
         priceListId,
-        productId: itemData.productId,
+        productId: targetProductId,
         productName: itemData.productName || 'Configured Product',
         productSku: itemData.productSku || 'PRD-CUSTOM',
-        basePrice: parseFloat(itemData.basePrice),
+        basePrice: parseFloat(targetBasePrice),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -344,8 +347,9 @@ export const priceListService = {
         throw error;
       }
 
-      if (itemData.basePrice !== undefined) {
-        item.basePrice = parseFloat(itemData.basePrice);
+      const targetBasePrice = itemData.basePrice !== undefined ? itemData.basePrice : itemData.base_price;
+      if (targetBasePrice !== undefined) {
+        item.basePrice = parseFloat(targetBasePrice);
       }
       item.updatedAt = new Date().toISOString();
       return item;

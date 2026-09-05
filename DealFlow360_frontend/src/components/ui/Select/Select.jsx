@@ -47,6 +47,10 @@ export const Select = forwardRef(({
 
   const hasValue = value !== undefined && value !== null && value !== '';
 
+  // Calculate dynamic left and right padding to prevent icon & text overlap
+  const leftPaddingClass = LeadingIcon ? 'pl-10.5 sm:pl-11' : 'pl-3.5 sm:pl-4';
+  const rightPaddingClass = hasValue && isClearable ? 'pr-14' : 'pr-10 sm:pr-10.5';
+
   return (
     <div className={`w-full space-y-1.5 text-left ${containerClassName}`}>
       {label && (
@@ -57,8 +61,8 @@ export const Select = forwardRef(({
 
       <div className="relative rounded-xl shadow-xs">
         {LeadingIcon && (
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-            <LeadingIcon className="w-4 h-4" />
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 z-10">
+            <LeadingIcon className="w-4 h-4 shrink-0 text-slate-400" />
           </div>
         )}
 
@@ -70,9 +74,7 @@ export const Select = forwardRef(({
           disabled={disabled || isLoading}
           aria-invalid={!!error}
           aria-describedby={error ? errorId : helperText ? helperId : undefined}
-          className={`w-full h-10 sm:h-11 px-3.5 sm:px-4 text-sm bg-white border rounded-xl appearance-none font-medium transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-60 disabled:bg-slate-100 disabled:cursor-not-allowed ${
-            LeadingIcon ? 'pl-10' : ''
-          } ${hasValue && isClearable ? 'pr-14' : 'pr-10'} ${
+          className={`w-full h-10 sm:h-11 ${leftPaddingClass} ${rightPaddingClass} text-sm bg-white border rounded-xl appearance-none font-medium transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-60 disabled:bg-slate-100 disabled:cursor-not-allowed ${
             !hasValue ? 'text-slate-400' : 'text-slate-900'
           } ${statusBorderClasses} ${className}`}
           {...props}

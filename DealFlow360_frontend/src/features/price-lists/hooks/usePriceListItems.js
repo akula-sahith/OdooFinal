@@ -41,25 +41,41 @@ export const usePriceListItems = (priceListId) => {
 
   /**
    * Add a product item entry to the price list.
-   * Prevents adding duplicate products if already present.
+   * Accepts normalized payload { productId, basePrice } or positional arguments (productId, basePrice).
    */
-  const addItem = async (itemData) => {
+  const addItem = async (itemData, optionalBasePrice) => {
+    let payload = itemData;
+    if (typeof itemData === 'string' || typeof itemData === 'number') {
+      payload = { productId: itemData, basePrice: optionalBasePrice };
+    }
+    const targetProductId = payload.productId || payload.product_id;
+    const targetBasePrice = payload.basePrice !== undefined ? payload.basePrice : payload.base_price;
+
+    const normalizedPayload = {
+      productId: targetProductId,
+      basePrice: Number(targetBasePrice),
+    };
+
     setSaving(true);
     setError(null);
     setFieldErrors({});
 
     // Check client-side if product is already in the item list
-    const existing = items.find((i) => (i.product_id || i.product?.id) === itemData.product_id);
+    const existing = items.find((i) => {
+      const pid = i.productId || i.product_id || i.product?.id;
+      return pid === targetProductId;
+    });
+
     if (existing) {
       const msg = 'This product is already included in this price list.';
-      setFieldErrors({ product_id: msg });
+      setFieldErrors({ productId: msg, product_id: msg });
       setError(msg);
       setSaving(false);
-      return { success: false, error: msg, fieldErrors: { product_id: msg } };
+      return { success: false, error: msg, fieldErrors: { productId: msg } };
     }
 
     try {
-      const response = await priceListService.addPriceListItem(priceListId, itemData);
+      const response = await priceListService.addPriceListItem(priceListId, normalizedPayload);
       const newItem = response?.data || response;
       setItems((prev) => [newItem, ...prev]);
       return { success: true, data: newItem };
@@ -75,14 +91,31 @@ export const usePriceListItems = (priceListId) => {
 
   /**
    * Update base price of an existing item in the price list.
+   * Accepts { itemId, basePrice } or positional arguments (itemId, basePrice).
    */
-  const updateItem = async (itemId, itemData) => {
+  const updateItem = async (itemIdOrData, optionalBasePrice) => {
+    let itemId;
+    let basePrice;
+
+    if (typeof itemIdOrData === 'object' && itemIdOrData !== null) {
+      itemId = itemIdOrData.itemId || itemIdOrData.id;
+      basePrice = itemIdOrData.basePrice !== undefined ? itemIdOrData.basePrice : itemIdOrData.base_price;
+    } else {
+      itemId = itemIdOrData;
+      basePrice = optionalBasePrice;
+    }
+
+    const normalizedPayload = {
+      itemId,
+      basePrice: Number(basePrice),
+    };
+
     setSaving(true);
     setError(null);
     setFieldErrors({});
 
     try {
-      const response = await priceListService.updatePriceListItem(priceListId, itemId, itemData);
+      const response = await priceListService.updatePriceListItem(priceListId, itemId, normalizedPayload);
       const updatedItem = response?.data || response;
       setItems((prev) => prev.map((item) => (item.id === itemId ? { ...item, ...updatedItem } : item)));
       return { success: true, data: updatedItem };
@@ -119,13 +152,21 @@ export const usePriceListItems = (priceListId) => {
   return {
     items,
     loading,
+    isLoading: loading,
     saving,
+    isSaving: saving,
     error,
     fieldErrors,
+    refetch: fetchItems,
+    addItem,
+    updateItem,
+    updateItemPrice: updateItem,
+    removeItem,
     actions: {
       refetch: fetchItems,
       addItem,
       updateItem,
+      updateItemPrice: updateItem,
       removeItem,
       clearErrors: () => {
         setError(null);

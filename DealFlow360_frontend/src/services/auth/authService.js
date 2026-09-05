@@ -81,42 +81,57 @@ class AuthService {
     const body = options.body ? JSON.parse(options.body) : {};
 
     if (endpoint === '/auth/login') {
-      const { email, portal, password } = body;
+      const { email, password } = body;
       if (!email || !password) {
-        const err = new Error('Please enter valid email and password.');
+        const err = new Error('Please enter a valid email and password.');
         err.code = 'INVALID_CREDENTIALS';
         throw err;
       }
 
-      // Determine company role based on email or prefill selection
-      let role = 'Salesperson';
-      let name = email.split('@')[0].replace('.', ' ');
+      const lowerEmail = email.toLowerCase().trim();
 
-      if (portal === 'company') {
-        if (email.includes('admin')) {
-          role = 'Admin';
-          name = 'Admin User';
-        } else if (email.includes('manager')) {
-          role = 'Sales Manager';
-          name = 'Sales Manager';
-        } else {
-          role = 'Salesperson';
-          name = 'Rahul Kumar';
-        }
+      let role = 'Customer';
+      let portal = 'customer';
+      let name = email.split('@')[0].replace('.', ' ');
+      let companyName = 'Acme Enterprises';
+      let department = undefined;
+      let employeeId = undefined;
+
+      if (lowerEmail.includes('admin') || lowerEmail === 'admin@dealflow360.com') {
+        role = 'Admin';
+        portal = 'company';
+        name = 'System Administrator';
+        companyName = 'DealFlow360 Internal';
+        department = 'Executive Administration';
+        employeeId = 'DF360-ADM-001';
+      } else if (lowerEmail.includes('manager') || lowerEmail === 'manager@dealflow360.com') {
+        role = 'Sales Manager';
+        portal = 'company';
+        name = 'Sales Manager';
+        companyName = 'DealFlow360 Internal';
+        department = 'Commercial Sales Management';
+        employeeId = 'DF360-MGR-102';
+      } else if (lowerEmail.includes('sales') || lowerEmail === 'sales@dealflow360.com' || lowerEmail === 'rahul@dealflow360.com') {
+        role = 'Salesperson';
+        portal = 'company';
+        name = 'Sales Representative';
+        companyName = 'DealFlow360 Internal';
+        department = 'Commercial Sales';
+        employeeId = 'DF360-REP-204';
       }
 
       return {
         user: {
-          id: 'usr_101',
-          email,
+          id: `usr_${Date.now()}`,
+          email: lowerEmail,
           name,
           fullName: name,
           portal,
           status: 'ACTIVE',
-          role: portal === 'company' ? role : undefined,
-          companyName: portal === 'customer' ? 'Acme Enterprises' : 'DealFlow360 Internal',
-          department: portal === 'company' ? (role === 'Admin' ? 'Executive Administration' : 'Commercial Sales') : undefined,
-          employeeId: portal === 'company' ? 'DF360-EMP-9042' : undefined,
+          role,
+          companyName,
+          department,
+          employeeId,
         },
         requiresMfa: false,
         token: 'session_token_ready',
@@ -124,7 +139,20 @@ class AuthService {
     }
 
     if (endpoint === '/auth/customer/signup') {
-      return { success: true, email: body.businessEmail };
+      const { email, fullName, companyName } = body;
+      return {
+        user: {
+          id: `usr_cust_${Date.now()}`,
+          email: (email || 'customer@client.com').toLowerCase().trim(),
+          name: fullName || 'Valued Customer',
+          fullName: fullName || 'Valued Customer',
+          portal: 'customer',
+          status: 'ACTIVE',
+          role: 'Customer',
+          companyName: companyName || 'Client Company',
+        },
+        token: 'session_token_customer_signup',
+      };
     }
 
     if (endpoint === '/auth/forgot-password') {

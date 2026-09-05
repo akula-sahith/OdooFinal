@@ -14,6 +14,8 @@ export const PriceListTable = ({
   onRetry,
   onViewPriceList,
   onEditPriceList,
+  onView,
+  onEdit,
   onToggleStatus,
   sortColumn = 'name',
   sortDirection = 'asc',
@@ -22,6 +24,9 @@ export const PriceListTable = ({
   emptyDescription = 'No master price lists have been configured in the system yet.',
   emptyAction,
 }) => {
+  const handleView = onViewPriceList || onView;
+  const handleEdit = onEditPriceList || onEdit;
+
   const columns = [
     {
       key: 'name',
@@ -32,7 +37,7 @@ export const PriceListTable = ({
           <span
             onClick={(e) => {
               e.stopPropagation();
-              onViewPriceList && onViewPriceList(row);
+              if (handleView) handleView(row.id || row);
             }}
             className="font-bold text-slate-900 text-sm tracking-tight hover:text-[#714B67] transition-colors cursor-pointer block"
           >
@@ -138,37 +143,43 @@ export const PriceListTable = ({
       className: 'text-right',
       render: (_, row) => (
         <div className="flex items-center justify-end gap-1 select-none" onClick={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            onClick={() => onViewPriceList && onViewPriceList(row)}
-            className="p-1.5 text-slate-400 hover:text-[#714B67] hover:bg-[#F7F2F5] rounded-lg transition-colors cursor-pointer"
-            title="View Details & Price Items"
-            aria-label={`View ${row.name}`}
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => onEditPriceList && onEditPriceList(row)}
-            className="p-1.5 text-slate-400 hover:text-[#714B67] hover:bg-[#F7F2F5] rounded-lg transition-colors cursor-pointer"
-            title="Edit Price List"
-            aria-label={`Edit ${row.name}`}
-          >
-            <Edit3 className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => onToggleStatus && onToggleStatus(row)}
-            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-              row.status === 'ACTIVE'
-                ? 'text-emerald-600 hover:text-rose-600 hover:bg-rose-50'
-                : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'
-            }`}
-            title={row.status === 'ACTIVE' ? 'Deactivate Price List' : 'Activate Price List'}
-            aria-label={`${row.status === 'ACTIVE' ? 'Deactivate' : 'Activate'} ${row.name}`}
-          >
-            <Power className="w-4 h-4" />
-          </button>
+          {handleView && (
+            <button
+              type="button"
+              onClick={() => handleView(row.id || row)}
+              className="p-1.5 text-slate-400 hover:text-[#714B67] hover:bg-[#F7F2F5] rounded-lg transition-colors cursor-pointer"
+              title="View Details & Price Items"
+              aria-label={`View ${row.name}`}
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          )}
+          {handleEdit && (
+            <button
+              type="button"
+              onClick={() => handleEdit(row.id || row)}
+              className="p-1.5 text-slate-400 hover:text-[#714B67] hover:bg-[#F7F2F5] rounded-lg transition-colors cursor-pointer"
+              title="Edit Price List"
+              aria-label={`Edit ${row.name}`}
+            >
+              <Edit3 className="w-4 h-4" />
+            </button>
+          )}
+          {onToggleStatus && (
+            <button
+              type="button"
+              onClick={() => onToggleStatus(row)}
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                row.status === 'ACTIVE'
+                  ? 'text-emerald-600 hover:text-rose-600 hover:bg-rose-50'
+                  : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'
+              }`}
+              title={row.status === 'ACTIVE' ? 'Deactivate Price List' : 'Activate Price List'}
+              aria-label={`${row.status === 'ACTIVE' ? 'Deactivate' : 'Activate'} ${row.name}`}
+            >
+              <Power className="w-4 h-4" />
+            </button>
+          )}
         </div>
       ),
     },

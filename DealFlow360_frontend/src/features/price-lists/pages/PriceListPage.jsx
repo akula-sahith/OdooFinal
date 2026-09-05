@@ -7,6 +7,7 @@ import { Button } from '../../../components/ui/Button/Button';
 import { Pagination } from '../../../components/tables/Pagination/Pagination';
 import { ConfirmationDialog } from '../../../components/dialogs/ConfirmationDialog/ConfirmationDialog';
 import { useToast } from '../../../components/feedback/Toast';
+import { usePermissions } from '../../../hooks/auth/usePermissions';
 import { usePriceLists } from '../hooks/usePriceLists';
 import { PriceListFilters } from '../components/PriceListFilters';
 import { PriceListTable } from '../components/PriceListTable';
@@ -15,6 +16,11 @@ import { priceListService } from '../services/priceListService';
 export const PriceListPage = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  const { hasPermission } = usePermissions();
+
+  const canCreate = hasPermission('pricing.create');
+  const canUpdate = hasPermission('pricing.update');
+  const canManageStatus = hasPermission('pricing.manage_status');
 
   const [search, setSearch] = useState('');
   const [currency, setCurrency] = useState('ALL');
@@ -111,15 +117,17 @@ export const PriceListPage = () => {
         title="Price Lists"
         description="Configure base product price lists and currency catalogs for sales workflow."
         actions={
-          <div className="flex items-center gap-2.5">
-            <Button
-              variant="primary"
-              leadingIcon={Plus}
-              onClick={() => navigate('/company/price-lists/new')}
-            >
-              Create Price List
-            </Button>
-          </div>
+          canCreate ? (
+            <div className="flex items-center gap-2.5">
+              <Button
+                variant="primary"
+                leadingIcon={Plus}
+                onClick={() => navigate('/company/price-lists/new')}
+              >
+                Create Price List
+              </Button>
+            </div>
+          ) : null
         }
       />
 
@@ -143,8 +151,8 @@ export const PriceListPage = () => {
           error={error}
           onRetry={refetch}
           onView={(id) => navigate(`/company/price-lists/${id}`)}
-          onEdit={(id) => navigate(`/company/price-lists/${id}/edit`)}
-          onToggleStatus={handleToggleStatusClick}
+          onEdit={canUpdate ? (id) => navigate(`/company/price-lists/${id}/edit`) : undefined}
+          onToggleStatus={canManageStatus ? handleToggleStatusClick : undefined}
         />
 
         {/* Pagination Footer */}

@@ -1,0 +1,10 @@
+/**
+ * Customer Account Types & Status Definitions
+ */
+
+export const CUSTOMER_ACCOUNT_STATUS = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  PENDING_VERIFICATION: 'PENDING_VERIFICATION',
+  SUSPENDED: 'SUSPENDED',
+};

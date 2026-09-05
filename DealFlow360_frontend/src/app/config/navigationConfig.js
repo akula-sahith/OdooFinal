@@ -11,6 +11,11 @@ import {
   Lock,
   FileSpreadsheet,
   Sliders,
+  Percent,
+  GitMerge,
+  Key,
+  Inbox,
+  MessageSquare,
 } from 'lucide-react';
 
 /**
@@ -34,8 +39,27 @@ export const navigationSections = [
   },
   {
     id: 'sales',
-    title: 'SALES',
+    title: 'SALES WORKSPACE',
     items: [
+      {
+        id: 'sales-dashboard',
+        label: 'Sales Dashboard',
+        route: '/company/sales/dashboard',
+        icon: LayoutDashboard,
+        permission: 'requests.view',
+        matchRoutes: ['/company/sales/dashboard'],
+        description: 'Salesperson workspace overview and assigned requirement pipeline',
+      },
+      {
+        id: 'sales-requests',
+        label: 'Requirement Requests',
+        route: '/company/sales/requests',
+        icon: Inbox,
+        permission: 'requests.view',
+        matchRoutes: ['/company/sales/requests'],
+        badge: 'Requests',
+        description: 'Customer B2B commercial requirement requests and review queue',
+      },
       {
         id: 'customers',
         label: 'Customers',
@@ -88,6 +112,15 @@ export const navigationSections = [
         matchRoutes: ['/company/price-lists', '/company/pricing'],
         description: 'Configure base product price lists and currency catalogs',
       },
+      {
+        id: 'discount-tiers',
+        label: 'Discount Tiers',
+        route: '/company/discount-tiers',
+        icon: Percent,
+        permission: 'discounts.view',
+        matchRoutes: ['/company/discount-tiers'],
+        description: 'Configure permitted discount percentage bounds and escalation tiers',
+      },
     ],
   },
   {
@@ -111,6 +144,24 @@ export const navigationSections = [
         permission: 'roles.view',
         matchRoutes: ['/company/roles'],
         description: 'RBAC role assignments and security policies',
+      },
+      {
+        id: 'permissions',
+        label: 'Permission Catalogue',
+        route: '/company/permissions',
+        icon: Key,
+        permission: 'permissions.view',
+        matchRoutes: ['/company/permissions'],
+        description: 'Master enterprise capability catalog and RBAC domain tokens',
+      },
+      {
+        id: 'approval-chain',
+        label: 'Approval Chain',
+        route: '/company/approval-chain',
+        icon: GitMerge,
+        permission: 'approvals.view',
+        matchRoutes: ['/company/approval-chain'],
+        description: 'Configure discount escalation threshold sequence',
       },
       {
         id: 'approvals',
