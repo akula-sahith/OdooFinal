@@ -16,7 +16,7 @@ export const QuotationDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="space-y-6 text-left p-6 max-w-7xl mx-auto">
+      <div className="space-y-6 md:space-y-8 text-left">
         <Skeleton className="h-12 w-64" />
         <Skeleton className="h-96 w-full" />
       </div>
@@ -25,7 +25,7 @@ export const QuotationDetailPage = () => {
 
   if (error || !quotation) {
     return (
-      <div className="py-12 p-6 max-w-7xl mx-auto">
+      <div className="py-12 space-y-6 md:space-y-8">
         <ErrorState
           title="Quotation Not Found"
           description={error || 'The requested sales quotation does not exist or access is restricted.'}
@@ -43,7 +43,7 @@ export const QuotationDetailPage = () => {
   const isDraft = quotation.status === 'DRAFT';
 
   return (
-    <div className="space-y-6 text-left p-6 max-w-7xl mx-auto">
+    <div className="space-y-6 md:space-y-8 text-left">
       <PageHeader
         title={`Quotation ${quotation.quotationNumber || quotationId}`}
         description="Inspect commercial proposal details, client account references, and itemized subtotal breakdown."

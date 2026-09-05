@@ -8,7 +8,7 @@ export const OutOfStockPage = () => {
   const { stockRecords, loading } = useInventory({ status: 'OUT_OF_STOCK' });
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6 animate-fadeIn">
+    <div className="space-y-6 md:space-y-8 animate-fadeIn">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-700 pb-5">
         <div className="space-y-1">
           <Link to="/company/inventory" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition">

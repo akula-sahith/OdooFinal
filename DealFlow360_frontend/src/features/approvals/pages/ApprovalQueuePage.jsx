@@ -33,7 +33,7 @@ export const ApprovalQueuePage = () => {
   };
 
   return (
-    <div className="space-y-6 text-left p-6 max-w-7xl mx-auto">
+    <div className="space-y-6 md:space-y-8 text-left">
       <PageHeader
         title="Commercial Proposal Approval Workspace"
         description={`Review, authorize, or request revisions for commercial sales quotations (${

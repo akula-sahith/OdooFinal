@@ -81,7 +81,7 @@ export const ApprovalDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="space-y-6 text-left p-6 max-w-7xl mx-auto">
+      <div className="space-y-6 md:space-y-8 text-left">
         <Skeleton className="h-12 w-64" />
         <Skeleton className="h-64 w-full" />
         <Skeleton className="h-48 w-full" />
@@ -91,7 +91,7 @@ export const ApprovalDetailPage = () => {
 
   if (error || !data || !data.quotation) {
     return (
-      <div className="py-12 p-6 max-w-7xl mx-auto">
+      <div className="py-12 space-y-6 md:space-y-8">
         <ErrorState
           title="Approval Record Not Found"
           description={error || 'The requested approval record does not exist or access is restricted.'}
@@ -133,7 +133,7 @@ export const ApprovalDetailPage = () => {
   };
 
   return (
-    <div className="space-y-6 text-left p-6 max-w-7xl mx-auto">
+    <div className="space-y-6 md:space-y-8 text-left">
       <PageHeader
         title={`Review Quotation ${quotation.quotationNumber || quotationId}`}
         description="Inspect submitted commercial proposal specifications, governance risk evaluation, and execute decision."

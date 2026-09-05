@@ -16,6 +16,7 @@ import {
   Key,
   Inbox,
   MessageSquare,
+  BarChart3,
 } from 'lucide-react';
 
 /**
@@ -34,6 +35,15 @@ export const navigationSections = [
         icon: LayoutDashboard,
         permission: 'dashboard.view',
         description: 'Executive overview and real-time operational metrics',
+      },
+      {
+        id: 'analytics',
+        label: 'Analytics & Reports',
+        route: '/company/analytics',
+        icon: BarChart3,
+        permission: 'analytics.view',
+        matchRoutes: ['/company/analytics'],
+        description: 'Role-based commercial reporting and executive analytics',
       },
     ],
   },
@@ -127,6 +137,15 @@ export const navigationSections = [
     id: 'management',
     title: 'MANAGEMENT',
     items: [
+      {
+        id: 'admin-governance',
+        label: 'Admin Governance',
+        route: '/company/admin',
+        icon: ShieldAlert,
+        permission: 'roles.view',
+        matchRoutes: ['/company/admin'],
+        description: 'Centralized admin governance dashboard, approval rules, tax config, and settings',
+      },
       {
         id: 'users',
         label: 'Staff Users',

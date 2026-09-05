@@ -35,16 +35,10 @@ import { CustomerRequestDetailPage } from '../../features/customer-requests/page
 import { CustomerQuotationPage } from '../../features/customer-quotations/pages/CustomerQuotationPage';
 import { CustomerQuotationDetailPage } from '../../features/customer-quotations/pages/CustomerQuotationDetailPage';
 
-// Company Application Shell Placeholders
-import { DashboardPlaceholder } from '../../pages/company/DashboardPlaceholder';
-import { CustomersPlaceholder } from '../../pages/company/CustomersPlaceholder';
-import { CustomerDetailsPlaceholder } from '../../pages/company/CustomerDetailsPlaceholder';
-import { UsersPlaceholder } from '../../pages/company/UsersPlaceholder';
-import { UserDetailsPlaceholder } from '../../pages/company/UserDetailsPlaceholder';
-import { RolesPlaceholder } from '../../pages/company/RolesPlaceholder';
-import { RoleDetailsPlaceholder } from '../../pages/company/RoleDetailsPlaceholder';
-import { PricingPlaceholder } from '../../pages/company/PricingPlaceholder';
-import { PricingDetailsPlaceholder } from '../../pages/company/PricingDetailsPlaceholder';
+// Company Application Shell Dispatchers & Features
+import { DashboardDispatcher } from '../../pages/company/DashboardDispatcher';
+import { CustomerListPage } from '../../features/customers/pages/CustomerListPage';
+import { OrderListPage } from '../../features/orders/pages/OrderListPage';
 import { QuotationPage } from '../../features/quotations/pages/QuotationPage';
 import { QuotationCreatePage } from '../../features/quotations/pages/QuotationCreatePage';
 import { QuotationDetailPage } from '../../features/quotations/pages/QuotationDetailPage';
@@ -52,11 +46,6 @@ import { QuotationEditPage } from '../../features/quotations/pages/QuotationEdit
 import { QuotationFinalizationPage } from '../../features/quotation-finalization/pages/QuotationFinalizationPage';
 import { ApprovalQueuePage } from '../../features/approvals/pages/ApprovalQueuePage';
 import { ApprovalDetailPage } from '../../features/approvals/pages/ApprovalDetailPage';
-import { OrdersPlaceholder } from '../../pages/company/OrdersPlaceholder';
-import { OrderDetailsPlaceholder } from '../../pages/company/OrderDetailsPlaceholder';
-import { SecurityPlaceholder } from '../../pages/company/SecurityPlaceholder';
-import { AuditLogsPlaceholder } from '../../pages/company/AuditLogsPlaceholder';
-import { SettingsPlaceholder } from '../../pages/company/SettingsPlaceholder';
 import { WorkerProfile } from '../../pages/company/WorkerProfile';
 import { PermissionDenied } from '../../pages/company/PermissionDenied';
 import { NotFound } from '../../pages/company/NotFound';
@@ -135,6 +124,24 @@ import { PaymentDetailPage } from '../../features/payments/pages/PaymentDetailPa
 import { CustomerPaymentListPage } from '../../features/customer-account/pages/CustomerPaymentListPage';
 import { CustomerPaymentDetailPage } from '../../features/customer-account/pages/CustomerPaymentDetailPage';
 
+// Phase 18 — Reporting & Analytics Module
+import { AnalyticsDashboardPage } from '../../features/analytics/pages/AnalyticsDashboardPage';
+import { SalesAnalyticsPage } from '../../features/analytics/pages/SalesAnalyticsPage';
+import { QuotationAnalyticsPage } from '../../features/analytics/pages/QuotationAnalyticsPage';
+import { OrderAnalyticsPage } from '../../features/analytics/pages/OrderAnalyticsPage';
+import { FinanceAnalyticsPage } from '../../features/analytics/pages/FinanceAnalyticsPage';
+import { FulfillmentAnalyticsPage } from '../../features/analytics/pages/FulfillmentAnalyticsPage';
+import { CustomerAnalyticsPage } from '../../features/analytics/pages/CustomerAnalyticsPage';
+
+// Phase 19 — Admin Governance & System Management Module
+import { AdminGovernancePage } from '../../features/admin-governance/pages/AdminGovernancePage';
+import { ApprovalRulesPage } from '../../features/admin-governance/pages/ApprovalRulesPage';
+import { TaxConfigPage } from '../../features/admin-governance/pages/TaxConfigPage';
+import { CurrencyConfigPage } from '../../features/admin-governance/pages/CurrencyConfigPage';
+import { SystemSettingsPage } from '../../features/admin-governance/pages/SystemSettingsPage';
+import { AuditLogsPage } from '../../features/admin-governance/pages/AuditLogsPage';
+import { SecurityGovernancePage } from '../../features/admin-governance/pages/SecurityGovernancePage';
+
 // Developer UI System Showcase
 import { UIShowcase } from '../../pages/dev/UIShowcase';
 
@@ -199,6 +206,7 @@ export const AppRouter = () => {
         <Route path="invoices/:invoiceId" element={<CustomerInvoiceDetailPage />} />
         <Route path="payments" element={<CustomerPaymentListPage />} />
         <Route path="payments/:paymentId" element={<CustomerPaymentDetailPage />} />
+        <Route path="analytics" element={<CustomerAnalyticsPage />} />
         <Route path="*" element={<Navigate to="/customer/dashboard" replace />} />
       </Route>
 
@@ -225,7 +233,7 @@ export const AppRouter = () => {
           path="dashboard"
           element={
             <ProtectedCompanyRoute requiredPermission="dashboard.view">
-              <DashboardPlaceholder />
+              <DashboardDispatcher />
             </ProtectedCompanyRoute>
           }
         />
@@ -233,7 +241,7 @@ export const AppRouter = () => {
           path="admin/dashboard"
           element={
             <ProtectedCompanyRoute requiredPermission="dashboard.view">
-              <DashboardPlaceholder />
+              <DashboardDispatcher />
             </ProtectedCompanyRoute>
           }
         />
@@ -306,7 +314,7 @@ export const AppRouter = () => {
           path="customers"
           element={
             <ProtectedCompanyRoute requiredPermission="customers.view">
-              <CustomersPlaceholder />
+              <CustomerListPage />
             </ProtectedCompanyRoute>
           }
         />
@@ -314,7 +322,7 @@ export const AppRouter = () => {
           path="customers/:id"
           element={
             <ProtectedCompanyRoute requiredPermission="customers.view">
-              <CustomerDetailsPlaceholder />
+              <CustomerListPage />
             </ProtectedCompanyRoute>
           }
         />
@@ -365,7 +373,7 @@ export const AppRouter = () => {
           path="orders"
           element={
             <ProtectedCompanyRoute requiredPermission="orders.view">
-              <OrdersPlaceholder />
+              <OrderListPage />
             </ProtectedCompanyRoute>
           }
         />
@@ -373,7 +381,7 @@ export const AppRouter = () => {
           path="orders/:id"
           element={
             <ProtectedCompanyRoute requiredPermission="orders.view">
-              <OrderDetailsPlaceholder />
+              <OrderListPage />
             </ProtectedCompanyRoute>
           }
         />
@@ -550,6 +558,146 @@ export const AppRouter = () => {
           element={
             <ProtectedCompanyRoute requiredPermission="payments.view">
               <PaymentDetailPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        {/* Phase 18 — Reporting & Analytics Module */}
+        <Route
+          path="analytics"
+          element={
+            <ProtectedCompanyRoute requiredPermission="analytics.view">
+              <AnalyticsDashboardPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="analytics/sales"
+          element={
+            <ProtectedCompanyRoute requiredPermission="analytics.sales.view">
+              <SalesAnalyticsPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="analytics/quotations"
+          element={
+            <ProtectedCompanyRoute requiredPermission="analytics.view">
+              <QuotationAnalyticsPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="analytics/orders"
+          element={
+            <ProtectedCompanyRoute requiredPermission="orders.view">
+              <OrderAnalyticsPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="analytics/finance"
+          element={
+            <ProtectedCompanyRoute requiredPermission="analytics.finance.view">
+              <FinanceAnalyticsPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="analytics/fulfillment"
+          element={
+            <ProtectedCompanyRoute requiredPermission="fulfillment.view">
+              <FulfillmentAnalyticsPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        {/* Phase 19 — Admin Governance & System Management Routes */}
+        <Route
+          path="admin"
+          element={
+            <ProtectedCompanyRoute requiredPermission="roles.view">
+              <AdminGovernancePage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="admin/users"
+          element={
+            <ProtectedCompanyRoute requiredPermission="users.view">
+              <UserPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="admin/roles"
+          element={
+            <ProtectedCompanyRoute requiredPermission="roles.view">
+              <RolePage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="admin/permissions"
+          element={
+            <ProtectedCompanyRoute requiredPermission="permissions.view">
+              <PermissionPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="admin/approval-rules"
+          element={
+            <ProtectedCompanyRoute requiredPermission="approvals.view">
+              <ApprovalRulesPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="admin/warehouses"
+          element={
+            <ProtectedCompanyRoute requiredPermission="warehouse.view">
+              <WarehouseListPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="admin/taxes"
+          element={
+            <ProtectedCompanyRoute requiredPermission="settings.view">
+              <TaxConfigPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="admin/currencies"
+          element={
+            <ProtectedCompanyRoute requiredPermission="settings.view">
+              <CurrencyConfigPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="admin/settings"
+          element={
+            <ProtectedCompanyRoute requiredPermission="settings.view">
+              <SystemSettingsPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="admin/audit-logs"
+          element={
+            <ProtectedCompanyRoute requiredPermission="audit_logs.view">
+              <AuditLogsPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="admin/security"
+          element={
+            <ProtectedCompanyRoute requiredPermission="security.view">
+              <SecurityGovernancePage />
             </ProtectedCompanyRoute>
           }
         />
@@ -788,7 +936,7 @@ export const AppRouter = () => {
           path="security"
           element={
             <ProtectedCompanyRoute requiredPermission="security.view">
-              <SecurityPlaceholder />
+              <SecurityGovernancePage />
             </ProtectedCompanyRoute>
           }
         />
@@ -797,7 +945,7 @@ export const AppRouter = () => {
           path="audit-logs"
           element={
             <ProtectedCompanyRoute requiredPermission="audit_logs.view">
-              <AuditLogsPlaceholder />
+              <AuditLogsPage />
             </ProtectedCompanyRoute>
           }
         />
@@ -806,7 +954,7 @@ export const AppRouter = () => {
           path="settings"
           element={
             <ProtectedCompanyRoute requiredPermission="settings.view">
-              <SettingsPlaceholder />
+              <SystemSettingsPage />
             </ProtectedCompanyRoute>
           }
         />

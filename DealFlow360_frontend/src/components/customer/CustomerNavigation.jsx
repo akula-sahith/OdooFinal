@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Bell,
   User,
+  BarChart3,
 } from 'lucide-react';
 
 /**
@@ -23,6 +24,12 @@ export const CUSTOMER_NAV_ITEMS = [
     label: 'Dashboard',
     route: '/customer/dashboard',
     icon: LayoutDashboard,
+  },
+  {
+    id: 'analytics',
+    label: 'Analytics',
+    route: '/customer/analytics',
+    icon: BarChart3,
   },
   {
     id: 'quotations',

@@ -5,12 +5,11 @@ import {
   Clock,
   MessageSquare,
   CheckCircle2,
-  Plus,
   ArrowRight,
   TrendingUp,
+  FileText,
+  AlertCircle,
 } from 'lucide-react';
-import { PageHeader } from '../../../components/ui/PageHeader/PageHeader';
-import { Card } from '../../../components/ui/Card/Card';
 import { Button } from '../../../components/ui/Button/Button';
 import { Skeleton } from '../../../components/feedback/Skeleton/Skeleton';
 import { EmptyState } from '../../../components/feedback/EmptyState/EmptyState';
@@ -24,7 +23,7 @@ export const SalespersonDashboardPage = () => {
 
   if (error) {
     return (
-      <div className="py-12">
+      <div className="space-y-6 md:space-y-8">
         <ErrorState
           title="Sales Workspace Unavailable"
           description={error}
@@ -35,156 +34,153 @@ export const SalespersonDashboardPage = () => {
   }
 
   return (
-    <div className="space-y-6 text-left">
-      {/* Header */}
-      <PageHeader
-        title="Salesperson Workspace"
-        description="Monitor assigned B2B commercial requirement requests, conduct customer clarifications, and confirm specifications for quotation handoff."
-        actions={
-          <Button
-            variant="primary"
-            leftIcon={Inbox}
-            onClick={() => navigate('/company/sales/requests')}
-            className="bg-[#714B67] hover:bg-[#5a3b52] text-white"
-          >
-            View Request Queue
-          </Button>
-        }
-      />
+    <div className="space-y-6 md:space-y-8 text-left pb-6">
+      {/* Header Banner */}
+      <div className="p-6 md:p-8 bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 rounded-3xl border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider">
+            <TrendingUp className="w-3.5 h-3.5 text-purple-400" />
+            Salesperson Operational Pipeline
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Sales Work Queue & Actions
+          </h1>
+          <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
+            Monitor assigned B2B commercial requirement requests, conduct customer technical clarifications, and prepare specifications for quotation approval handoff.
+          </p>
+        </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Button
+          variant="primary"
+          leftIcon={Inbox}
+          onClick={() => navigate('/company/sales/requests')}
+          className="bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm px-5 py-3 rounded-xl shadow-lg shadow-purple-600/30 transition self-start md:self-auto"
+        >
+          View Full Request Queue
+        </Button>
+      </div>
+
+      {/* Metric Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Card 1: Assigned Requests */}
-        <Card variant="default" padding="md" className="space-y-2 relative overflow-hidden">
+        <div className="p-6 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl space-y-4 hover:border-purple-500/30 transition">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase text-slate-500 tracking-wider">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Assigned Requests
             </span>
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-[#714B67] flex items-center justify-center border border-purple-100">
-              <Inbox className="w-4 h-4" />
+            <div className="p-3 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              <Inbox className="w-5 h-5" />
             </div>
           </div>
           {loading ? (
-            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-9 w-24 bg-slate-800" />
           ) : (
-            <div className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <div className="text-3xl font-black text-white tracking-tight">
               {metrics?.assignedRequestsCount ?? 0}
             </div>
           )}
-          <p className="text-[11px] text-slate-500 font-medium">Total requirements in pipeline</p>
-        </Card>
+          <p className="text-xs text-slate-400 font-medium">Requirements in active pipeline</p>
+        </div>
 
         {/* Card 2: Pending Reviews */}
-        <Card variant="default" padding="md" className="space-y-2 relative overflow-hidden">
+        <div className="p-6 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl space-y-4 hover:border-amber-500/30 transition">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase text-slate-500 tracking-wider">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Pending Review
             </span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100">
-              <Clock className="w-4 h-4" />
+            <div className="p-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <Clock className="w-5 h-5" />
             </div>
           </div>
           {loading ? (
-            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-9 w-24 bg-slate-800" />
           ) : (
-            <div className="text-3xl font-extrabold text-amber-700 tracking-tight">
+            <div className="text-3xl font-black text-amber-400 tracking-tight">
               {metrics?.pendingRequestsCount ?? 0}
             </div>
           )}
-          <p className="text-[11px] text-slate-500 font-medium">Submitted & under active review</p>
-        </Card>
+          <p className="text-xs text-slate-400 font-medium">Submitted & under review</p>
+        </div>
 
         {/* Card 3: Clarifications Needed */}
-        <Card variant="default" padding="md" className="space-y-2 relative overflow-hidden">
+        <div className="p-6 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl space-y-4 hover:border-blue-500/30 transition">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase text-slate-500 tracking-wider">
-              Awaiting Customer
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Clarification Needed
             </span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center border border-blue-100">
-              <MessageSquare className="w-4 h-4" />
+            <div className="p-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              <MessageSquare className="w-5 h-5" />
             </div>
           </div>
           {loading ? (
-            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-9 w-24 bg-slate-800" />
           ) : (
-            <div className="text-3xl font-extrabold text-blue-700 tracking-tight">
-              {metrics?.awaitingCustomerCount ?? 0}
+            <div className="text-3xl font-black text-blue-400 tracking-tight">
+              {metrics?.inClarificationCount ?? 0}
             </div>
           )}
-          <p className="text-[11px] text-slate-500 font-medium">Clarifications pending client reply</p>
-        </Card>
+          <p className="text-xs text-slate-400 font-medium">Awaiting customer specifications</p>
+        </div>
 
-        {/* Card 4: Confirmed Requirements */}
-        <Card variant="default" padding="md" className="space-y-2 relative overflow-hidden">
+        {/* Card 4: Proposal Ready */}
+        <div className="p-6 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl space-y-4 hover:border-emerald-500/30 transition">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase text-slate-500 tracking-wider">
-              Confirmed Requirements
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Proposal Ready
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
-              <CheckCircle2 className="w-4 h-4" />
+            <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
           {loading ? (
-            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-9 w-24 bg-slate-800" />
           ) : (
-            <div className="text-3xl font-extrabold text-emerald-700 tracking-tight">
-              {metrics?.confirmedRequirementsCount ?? 0}
+            <div className="text-3xl font-black text-emerald-400 tracking-tight">
+              {metrics?.proposalReadyCount ?? 0}
             </div>
           )}
-          <p className="text-[11px] text-slate-500 font-medium">Ready for quotation generation</p>
-        </Card>
+          <p className="text-xs text-slate-400 font-medium">Ready for quotation draft</p>
+        </div>
       </div>
 
-      {/* Main Content: Recent Assigned Requests */}
-      <Card variant="default" padding="none" className="overflow-hidden">
-        <div className="p-5 border-b border-slate-200/80 flex items-center justify-between">
+      {/* Main Priority Work Table Area */}
+      <div className="p-6 md:p-8 bg-slate-900/90 border border-slate-800 rounded-3xl shadow-xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-base font-bold text-slate-900 tracking-tight">
-              Recent Assigned Requirement Requests
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <FileText className="w-5 h-5 text-purple-400" />
+              Priority Requirement Requests Queue
             </h2>
-            <p className="text-xs text-slate-500">
-              Priority requirement proposals requiring sales lead interaction.
+            <p className="text-xs text-slate-400 mt-1">
+              Active commercial requirement requests assigned to your sales account.
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/company/sales/requests')}
-            rightIcon={ArrowRight}
+
+          <button
+            onClick={() => navigate('/company/quotations/new')}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs shadow-md shadow-emerald-500/20 transition self-start sm:self-auto"
           >
-            View All Requests
-          </Button>
+            Create New Quotation
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
 
         {loading ? (
-          <div className="p-6 space-y-3">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+          <div className="space-y-3 py-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-16 bg-slate-800/60 rounded-xl animate-pulse" />
+            ))}
           </div>
-        ) : metrics?.recentAssignedRequests?.length === 0 ? (
-          <div className="p-8">
-            <EmptyState
-              title="No Assigned Requests"
-              description="You do not currently have any requirement requests assigned to your queue."
-              action={
-                <Button
-                  variant="outline"
-                  onClick={() => navigate('/company/sales/requests')}
-                >
-                  Explore Unassigned Queue
-                </Button>
-              }
-            />
-          </div>
-        ) : (
-          <SalespersonRequestTable
-            requests={metrics?.recentAssignedRequests || []}
-            loading={false}
-            onView={(id) => navigate(`/company/sales/requests/${id}`)}
+        ) : metrics?.requests?.length === 0 ? (
+          <EmptyState
+            icon={Inbox}
+            title="No Assigned Requests"
+            description="You currently have no pending customer requirement requests assigned to your queue."
           />
+        ) : (
+          <SalespersonRequestTable requests={metrics?.requests || []} />
         )}
-      </Card>
+      </div>
     </div>
   );
 };

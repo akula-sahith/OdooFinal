@@ -27,6 +27,18 @@ export const ProtectedCompanyRoute = ({ children, requiredPermission }) => {
     );
   }
 
+  // Security Check: Disabled or Locked Accounts cannot access protected company workspace
+  if (user.status === 'INACTIVE' || user.status === 'LOCKED') {
+    return (
+      <CompanyLayout>
+        <PermissionDenied
+          title="Account Status Restriction"
+          description="Your staff account has been deactivated or locked by an administrator. Please contact your organization administrator to restore access."
+        />
+      </CompanyLayout>
+    );
+  }
+
   // Check route level permission if specified
   if (requiredPermission && !hasPermission(requiredPermission)) {
     return (
@@ -38,3 +50,5 @@ export const ProtectedCompanyRoute = ({ children, requiredPermission }) => {
 
   return <CompanyLayout>{children}</CompanyLayout>;
 };
+
+export default ProtectedCompanyRoute;

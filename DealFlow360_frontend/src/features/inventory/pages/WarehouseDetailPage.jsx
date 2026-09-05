@@ -14,7 +14,7 @@ export const WarehouseDetailPage = () => {
 
   if (whLoading) {
     return (
-      <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+      <div className="space-y-6 md:space-y-8">
         <div className="h-6 w-36 bg-slate-200 animate-pulse rounded" />
         <div className="h-32 bg-slate-100 animate-pulse rounded-2xl" />
         <div className="h-64 bg-slate-100 animate-pulse rounded-2xl" />
@@ -42,7 +42,7 @@ export const WarehouseDetailPage = () => {
   const availableUnits = stockRecords.reduce((sum, r) => sum + r.availableQuantity, 0);
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6 animate-fadeIn">
+    <div className="space-y-6 md:space-y-8 animate-fadeIn">
       {/* Top Nav */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Link to="/company/inventory/warehouses" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition">

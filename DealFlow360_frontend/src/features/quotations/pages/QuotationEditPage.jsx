@@ -62,7 +62,7 @@ export const QuotationEditPage = () => {
 
   if (quoteLoading || loading) {
     return (
-      <div className="space-y-6 text-left p-6 max-w-7xl mx-auto">
+      <div className="space-y-6 md:space-y-8 text-left">
         <Skeleton className="h-12 w-64" />
         <Skeleton className="h-64 w-full" />
       </div>
@@ -71,7 +71,7 @@ export const QuotationEditPage = () => {
 
   if (quoteError || !quotation) {
     return (
-      <div className="py-12 p-6 max-w-7xl mx-auto">
+      <div className="py-12 space-y-6 md:space-y-8">
         <ErrorState
           title="Quotation Not Found"
           description={quoteError || 'Sales quotation not found.'}
@@ -88,7 +88,7 @@ export const QuotationEditPage = () => {
 
   if (quotation.status !== 'DRAFT') {
     return (
-      <div className="py-12 p-6 max-w-7xl mx-auto">
+      <div className="py-12 space-y-6 md:space-y-8">
         <ErrorState
           title="Quotation Locked for Editing"
           description={`Quotation in status ${quotation.status} cannot be edited. Only DRAFT proposals can be modified.`}
@@ -103,7 +103,7 @@ export const QuotationEditPage = () => {
   }
 
   return (
-    <div className="space-y-6 text-left p-6 max-w-7xl mx-auto">
+    <div className="space-y-6 md:space-y-8 text-left">
       <PageHeader
         title={`Edit Draft Quotation ${quotation.quotationNumber || quotationId}`}
         description="Update proposal line items, quantities, validity dates, or commercial notes."

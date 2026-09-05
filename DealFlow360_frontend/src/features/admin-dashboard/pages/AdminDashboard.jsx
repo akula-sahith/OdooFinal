@@ -57,7 +57,7 @@ export const AdminDashboard = () => {
   const userName = user?.name || user?.email?.split('@')[0] || 'Admin';
 
   return (
-    <div className="space-y-6 pb-12 text-left max-w-7xl mx-auto">
+    <div className="space-y-6 md:space-y-8 pb-6 text-left">
       {/* 1. PLATFORM OVERVIEW */}
       <PageHeader
         title="Admin Dashboard"
