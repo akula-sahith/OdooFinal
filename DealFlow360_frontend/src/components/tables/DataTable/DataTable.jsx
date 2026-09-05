@@ -2,8 +2,7 @@ import React from 'react';
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import TableSkeleton from '../TableSkeleton/TableSkeleton';
 import Checkbox from '../../ui/Checkbox';
-import EmptyState from '../../feedback/EmptyState';
-import ErrorState from '../../feedback/ErrorState';
+import { EmptyState, ErrorState } from '../../feedback';
 
 /**
  * Reusable DataTable Foundation Component
@@ -14,6 +13,7 @@ export const DataTable = ({
   data = [],
   isLoading = false,
   error = null,
+  onRetry,
   emptyTitle = 'No records found',
   emptyDescription = 'There are no items to display in this list.',
   emptyAction,
@@ -34,7 +34,7 @@ export const DataTable = ({
   if (error) {
     return (
       <div className="p-8 bg-white border border-slate-200 rounded-2xl text-center">
-        <ErrorState message={error.message || 'Failed to load table data.'} />
+        <ErrorState message={error.message || 'Failed to load table data.'} onRetry={onRetry} />
       </div>
     );
   }

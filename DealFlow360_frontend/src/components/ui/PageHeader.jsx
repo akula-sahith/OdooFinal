@@ -6,6 +6,7 @@ export const PageHeader = ({
   subtitle,
   description,
   actions,
+  action,
   badgeText,
   badge,
   badgeVariant = 'plum',
@@ -16,7 +17,8 @@ export const PageHeader = ({
     <UIPageHeader
       title={title}
       description={description || subtitle}
-      actions={actions}
+      actions={actions || action}
+      action={action || actions}
       badge={badge}
       breadcrumbs={breadcrumbs}
       className={className}
