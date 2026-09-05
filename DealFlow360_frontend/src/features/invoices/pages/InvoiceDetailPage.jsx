@@ -1,7 +1,7 @@
 /**
  * Comprehensive Commercial Invoice Detail & Document Preview Page
  * Route: /company/invoices/:invoiceId
- * Phase 14 — DealFlow360
+ * Phase 14 & Phase 15 — DealFlow360
  */
 
 import React, { useState } from 'react';
@@ -15,9 +15,8 @@ import {
   Edit3,
   Ban,
   ShieldCheck,
-  MapPin,
-  Clock,
-  DollarSign,
+  CreditCard,
+  Plus,
   ShieldAlert,
 } from 'lucide-react';
 import { useInvoice } from '../hooks/useInvoice';
@@ -28,14 +27,25 @@ import { InvoiceSummary } from '../components/InvoiceSummary';
 import { VoidInvoiceModal } from '../components/VoidInvoiceModal';
 import { INVOICE_STATUS } from '../types/invoiceTypes';
 
+// Phase 15 Payment Imports
+import { useInvoicePayments } from '../../payments/hooks/useInvoicePayments';
+import { PaymentTimeline } from '../../payments/components/PaymentTimeline';
+import { PaymentFormModal } from '../../payments/components/PaymentFormModal';
+import { paymentService } from '../../payments/services/paymentService';
+import { CancelPaymentModal } from '../../payments/components/CancelPaymentModal';
+
 export const InvoiceDetailPage = () => {
   const { invoiceId } = useParams();
   const navigate = useNavigate();
   const { invoice, auditLogs, loading, error, refetch, issueInvoice, voidInvoice, cancelInvoice } = useInvoice(invoiceId);
+  const { payments, refetch: refetchPayments } = useInvoicePayments(invoiceId);
 
-  const [activeTab, setActiveTab] = useState('DOCUMENT'); // 'DOCUMENT', 'ITEMS', 'AUDIT'
+  const [activeTab, setActiveTab] = useState('DOCUMENT'); // 'DOCUMENT', 'ITEMS', 'PAYMENTS', 'AUDIT'
   const [isVoidModalOpen, setIsVoidModalOpen] = useState(false);
   const [voidActionType, setVoidActionType] = useState('VOID'); // 'VOID' or 'CANCEL'
+  const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false);
+  const [selectedPaymentForCancel, setSelectedPaymentForCancel] = useState(null);
+
   const [processing, setProcessing] = useState(false);
   const [actionError, setActionError] = useState(null);
 
@@ -96,6 +106,43 @@ export const InvoiceDetailPage = () => {
     }
   };
 
+  const handleRecordPaymentSubmit = async (paymentData) => {
+    setProcessing(true);
+    setActionError(null);
+    try {
+      await paymentService.createPayment(paymentData, 'Finance User');
+      setIsRecordPaymentOpen(false);
+      refetch();
+      refetchPayments();
+    } catch (e) {
+      setActionError(e.message);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleCancelPaymentConfirm = async (reason) => {
+    if (!selectedPaymentForCancel) return;
+    setProcessing(true);
+    setActionError(null);
+    try {
+      await paymentService.cancelPayment(selectedPaymentForCancel.id, reason, 'Finance Admin');
+      setSelectedPaymentForCancel(null);
+      refetch();
+      refetchPayments();
+    } catch (e) {
+      setActionError(e.message);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const isPayableStatus =
+    (invoice.status === INVOICE_STATUS.ISSUED ||
+      invoice.status === INVOICE_STATUS.PARTIALLY_PAID ||
+      invoice.status === INVOICE_STATUS.OVERDUE) &&
+    (invoice.amountDue === undefined || invoice.amountDue > 0);
+
   return (
     <div className="space-y-6 pb-16">
       {/* Top Header */}
@@ -136,6 +183,16 @@ export const InvoiceDetailPage = () => {
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-2">
+            {isPayableStatus && (
+              <button
+                type="button"
+                onClick={() => setIsRecordPaymentOpen(true)}
+                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <CreditCard className="w-4 h-4 text-white" /> Record Payment
+              </button>
+            )}
+
             {invoice.status === INVOICE_STATUS.DRAFT && (
               <>
                 <button
@@ -209,6 +266,7 @@ export const InvoiceDetailPage = () => {
         {[
           { id: 'DOCUMENT', label: 'Printable Document View', icon: Printer },
           { id: 'ITEMS', label: 'Commercial Line Items', icon: FileText },
+          { id: 'PAYMENTS', label: `Payment History (${payments.length})`, icon: CreditCard },
           { id: 'AUDIT', label: 'Financial Audit Log', icon: ShieldCheck },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -245,7 +303,17 @@ export const InvoiceDetailPage = () => {
         </div>
       )}
 
-      {/* Tab 3: AUDIT */}
+      {/* Tab 3: PAYMENTS */}
+      {activeTab === 'PAYMENTS' && (
+        <PaymentTimeline
+          invoice={invoice}
+          payments={payments}
+          onRecordPaymentClick={() => setIsRecordPaymentOpen(true)}
+          onCancelPaymentClick={(p) => setSelectedPaymentForCancel(p)}
+        />
+      )}
+
+      {/* Tab 4: AUDIT */}
       {activeTab === 'AUDIT' && (
         <div className="bg-white border border-slate-200/90 rounded-2xl shadow-2xs p-6 space-y-4">
           <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
@@ -273,12 +341,28 @@ export const InvoiceDetailPage = () => {
         </div>
       )}
 
-      {/* Void Modal */}
+      {/* Void Invoice Modal */}
       <VoidInvoiceModal
         isOpen={isVoidModalOpen}
         onClose={() => setIsVoidModalOpen(false)}
         actionType={voidActionType}
         onConfirmAction={handleVoidModalConfirm}
+      />
+
+      {/* Record Payment Modal */}
+      <PaymentFormModal
+        isOpen={isRecordPaymentOpen}
+        onClose={() => setIsRecordPaymentOpen(false)}
+        initialInvoice={invoice}
+        onSubmitPayment={handleRecordPaymentSubmit}
+      />
+
+      {/* Cancel Payment Modal */}
+      <CancelPaymentModal
+        isOpen={Boolean(selectedPaymentForCancel)}
+        onClose={() => setSelectedPaymentForCancel(null)}
+        payment={selectedPaymentForCancel}
+        onConfirmCancel={handleCancelPaymentConfirm}
       />
     </div>
   );

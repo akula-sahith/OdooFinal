@@ -123,6 +123,12 @@ import { InvoiceEditPage } from '../../features/invoices/pages/InvoiceEditPage';
 import { CustomerInvoiceListPage } from '../../features/customer-account/pages/CustomerInvoiceListPage';
 import { CustomerInvoiceDetailPage } from '../../features/customer-account/pages/CustomerInvoiceDetailPage';
 
+// Phase 15 — Payment Management Module
+import { PaymentListPage } from '../../features/payments/pages/PaymentListPage';
+import { PaymentDetailPage } from '../../features/payments/pages/PaymentDetailPage';
+import { CustomerPaymentListPage } from '../../features/customer-account/pages/CustomerPaymentListPage';
+import { CustomerPaymentDetailPage } from '../../features/customer-account/pages/CustomerPaymentDetailPage';
+
 // Developer UI System Showcase
 import { UIShowcase } from '../../pages/dev/UIShowcase';
 
@@ -179,6 +185,8 @@ export const AppRouter = () => {
         <Route path="orders/:orderId" element={<CustomerOrderTrackingPage />} />
         <Route path="invoices" element={<CustomerInvoiceListPage />} />
         <Route path="invoices/:invoiceId" element={<CustomerInvoiceDetailPage />} />
+        <Route path="payments" element={<CustomerPaymentListPage />} />
+        <Route path="payments/:paymentId" element={<CustomerPaymentDetailPage />} />
         <Route path="*" element={<Navigate to="/customer/dashboard" replace />} />
       </Route>
 
@@ -488,6 +496,24 @@ export const AppRouter = () => {
           element={
             <ProtectedCompanyRoute requiredPermission="invoices.update">
               <InvoiceEditPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        {/* Phase 15 — Payment Management Module */}
+        <Route
+          path="payments"
+          element={
+            <ProtectedCompanyRoute requiredPermission="payments.view">
+              <PaymentListPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="payments/:paymentId"
+          element={
+            <ProtectedCompanyRoute requiredPermission="payments.view">
+              <PaymentDetailPage />
             </ProtectedCompanyRoute>
           }
         />
