@@ -38,7 +38,7 @@ public class DiscountTierRepository {
             String sql = "INSERT INTO discount_tiers (name, max_discount_percent) VALUES (?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 ps.setString(1, tier.getName());
                 ps.setBigDecimal(2, tier.getMaxDiscountPercent() != null ? tier.getMaxDiscountPercent() : BigDecimal.ZERO);
                 return ps;

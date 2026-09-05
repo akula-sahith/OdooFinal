@@ -42,7 +42,7 @@ public class CustomerRepository {
             String sql = "INSERT INTO customers (company_name, sales_team_id, discount_tier_id, portal_email, portal_password_hash, created_at) VALUES (?, ?, ?, ?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 ps.setString(1, customer.getCompanyName());
                 if (customer.getSalesTeamId() != null) {
                     ps.setLong(2, customer.getSalesTeamId());

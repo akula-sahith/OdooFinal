@@ -38,7 +38,7 @@ public class ProductRepository {
             String sql = "INSERT INTO products (name, category_id, base_price, tax_percent, currency, is_subscription) VALUES (?, ?, ?, ?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 ps.setString(1, product.getName());
                 if (product.getCategoryId() != null) {
                     ps.setLong(2, product.getCategoryId());

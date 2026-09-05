@@ -37,7 +37,7 @@ public class PriceListItemRepository {
             String sql = "INSERT INTO price_list_items (price_list_id, product_id, product_variant_id, unit_price, min_quantity) VALUES (?, ?, ?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 ps.setLong(1, item.getPriceListId());
                 ps.setLong(2, item.getProductId());
                 if (item.getProductVariantId() != null) {

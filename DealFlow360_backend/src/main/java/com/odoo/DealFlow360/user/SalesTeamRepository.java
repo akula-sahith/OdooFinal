@@ -37,7 +37,7 @@ public class SalesTeamRepository {
             String sql = "INSERT INTO sales_teams (name) VALUES (?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 ps.setString(1, salesTeam.getName());
                 return ps;
             }, keyHolder);

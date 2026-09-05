@@ -1,0 +1,636 @@
+{
+  "info": {
+    "_postman_id": "dealflow360-collection-v1-2026",
+    "name": "DealFlow360 Master API Collection",
+    "description": "Executable Postman collection for testing DealFlow360 backend REST endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 Health",
+      "item": [
+        {
+          "name": "Database & Application Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response contains UP indicator', function () { pm.expect(pm.response.text()).to.include('DealFlow360 is UP'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 Authentication",
+      "item": [
+        {
+          "name": "Register Admin User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"System Administrator\",\n  \"email\": \"admin@dealflow360.com\",\n  \"password\": \"AdminSecret2026!\",\n  \"role\": \"ADMIN\",\n  \"teamId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Admin registration returns 201', function () { pm.response.to.have.status(201); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register Sales Rep User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alex SalesRep\",\n  \"email\": \"alex.rep@dealflow360.com\",\n  \"password\": \"SalesRepPass2026!\",\n  \"role\": \"SALES_REP\",\n  \"teamId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Sales Rep registration returns 201', function () { pm.response.to.have.status(201); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as Sales Rep",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alex.rep@dealflow360.com\",\n  \"password\": \"SalesRepPass2026!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login returns 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('JWT token returned', function () { pm.expect(jsonData.token).to.not.be.null; });",
+                  "if (jsonData.token) { pm.environment.set('salesRepToken', jsonData.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Invalid Password (Negative)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alex.rep@dealflow360.com\",\n  \"password\": \"WrongPassword!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Invalid credentials returns 401', function () { pm.response.to.have.status(401); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 Quotations",
+      "item": [
+        {
+          "name": "Create Quotation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{salesRepToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": {{customerId}},\n  \"priceListId\": {{priceListId}},\n  \"currency\": \"USD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/quotations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotations"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Create quotation returns 201', function () { pm.response.to.have.status(201); });",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) { pm.environment.set('quotationId', jsonData.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Quotations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{salesRepToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/quotations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotations"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Get all quotations returns 200', function () { pm.response.to.have.status(200); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Quotation By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{salesRepToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/quotations/{{quotationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotations", "{{quotationId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Get quotation by ID returns 200', function () { pm.response.to.have.status(200); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit Quotation Approval",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{salesRepToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/quotations/{{quotationId}}/submit-approval",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "quotations", "{{quotationId}}", "submit-approval"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Submit approval returns 200', function () { pm.response.to.have.status(200); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 Customer Negotiation Portal",
+      "item": [
+        {
+          "name": "Get Portal Quotation View",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/quotations/{{quotationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "portal", "quotations", "{{quotationId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Portal quotation view returns 200', function () { pm.response.to.have.status(200); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit Customer Counter Offer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": {{customerId}},\n  \"quotationId\": {{quotationId}},\n  \"requestType\": \"COUNTER_DISCOUNT\",\n  \"description\": \"Requesting 10% volume discount\",\n  \"counterDiscountPercent\": 10.00,\n  \"proposedUnitPrice\": 900.00,\n  \"lineComments\": \"Matched competitor quote\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/negotiate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "portal", "negotiate"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Portal negotiation returns 201', function () { pm.response.to.have.status(201); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Confirm Quotation from Portal",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quotationId\": {{quotationId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/portal/confirm-quotation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "portal", "confirm-quotation"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Portal confirm quotation returns 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.order && jsonData.order.id) { pm.environment.set('orderId', jsonData.order.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 Orders & Fulfillment",
+      "item": [
+        {
+          "name": "Confirm Quotation and Split Order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quotationId\": {{quotationId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/confirm-quotation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "confirm-quotation"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Order confirmation returns 201', function () { pm.response.to.have.status(201); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Order Details By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "{{orderId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Get order details returns 200', function () { pm.response.to.have.status(200); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 Subscriptions",
+      "item": [
+        {
+          "name": "Create Subscription Plan",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": 1,\n  \"name\": \"SaaS Enterprise Plan\",\n  \"billingCycle\": \"MONTHLY\",\n  \"prorationRule\": \"EXACT_DAY\",\n  \"cancellationRefundRule\": \"PRO_RATA\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions/plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscriptions", "plans"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Create plan returns 201', function () { pm.response.to.have.status(201); });",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) { pm.environment.set('planId', jsonData.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Subscription",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": {{orderId}},\n  \"customerId\": {{customerId}},\n  \"planId\": {{planId}},\n  \"recurringAmount\": 1500.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscriptions"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Create subscription returns 201', function () { pm.response.to.have.status(201); });",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.subscription && jsonData.subscription.id) { pm.environment.set('subscriptionId', jsonData.subscription.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel Subscription",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions/{{subscriptionId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscriptions", "{{subscriptionId}}", "cancel"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Cancel subscription returns 200', function () { pm.response.to.have.status(200); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 Billing & Payments",
+      "item": [
+        {
+          "name": "Record Payment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoiceId\": {{invoiceId}},\n  \"paymentMethod\": \"CREDIT_CARD\",\n  \"amount\": 5000.00,\n  \"reference\": \"TXN-100200300\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/billing/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "billing", "payments"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Record payment returns 201', function () { pm.response.to.have.status(201); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Issue Credit Note",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoiceId\": {{invoiceId}},\n  \"amount\": 250.00,\n  \"reason\": \"SLA downtime adjustment credit\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/billing/credit-notes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "billing", "credit-notes"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Issue credit note returns 201', function () { pm.response.to.have.status(201); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Invoice Details By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/billing/invoices/{{invoiceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "billing", "invoices", "{{invoiceId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Get invoice details returns 200', function () { pm.response.to.have.status(200); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 Deal Health & Anomalies",
+      "item": [
+        {
+          "name": "Get All Deal Health Alerts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/deal-health/alerts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "deal-health", "alerts"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Get alerts returns 200', function () { pm.response.to.have.status(200); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resolve Deal Health Alert",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/deal-health/alerts/{{alertId}}/resolve",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "deal-health", "alerts", "{{alertId}}", "resolve"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Resolve alert returns 200', function () { pm.response.to.have.status(200); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "09 Executive Reporting",
+      "item": [
+        {
+          "name": "Get Sales Performance Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reporting/sales-performance?teamId=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reporting", "sales-performance"],
+              "query": [{ "key": "teamId", "value": "1" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Sales performance report returns 200', function () { pm.response.to.have.status(200); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Quotations By Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reporting/quotations-by-status?status=PENDING_APPROVAL",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reporting", "quotations-by-status"],
+              "query": [{ "key": "status", "value": "PENDING_APPROVAL" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Quotations by status returns 200', function () { pm.response.to.have.status(200); });"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

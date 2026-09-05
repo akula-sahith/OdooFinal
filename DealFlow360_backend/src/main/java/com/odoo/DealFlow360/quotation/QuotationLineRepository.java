@@ -38,7 +38,7 @@ public class QuotationLineRepository {
             String sql = "INSERT INTO quotation_lines (quotation_id, product_id, product_variant_id, quantity, unit_price, tax_percent, subtotal_amount, tax_amount, total_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 ps.setLong(1, line.getQuotationId());
                 ps.setLong(2, line.getProductId());
                 if (line.getProductVariantId() != null) {

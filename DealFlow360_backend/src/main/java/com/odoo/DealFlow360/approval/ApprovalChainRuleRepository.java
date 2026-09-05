@@ -39,7 +39,7 @@ public class ApprovalChainRuleRepository {
             String sql = "INSERT INTO approval_chain_rules (name, customer_id, tier_id, min_discount_percent, min_total_amount) VALUES (?, ?, ?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 ps.setString(1, rule.getName());
                 if (rule.getCustomerId() != null) {
                     ps.setLong(2, rule.getCustomerId());

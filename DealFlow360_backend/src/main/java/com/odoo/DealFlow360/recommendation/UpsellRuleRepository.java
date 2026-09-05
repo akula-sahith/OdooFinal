@@ -37,7 +37,7 @@ public class UpsellRuleRepository {
             String sql = "INSERT INTO upsell_rules (base_product_id, suggested_product_id, is_promoted, min_margin_threshold) VALUES (?, ?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 ps.setLong(1, rule.getBaseProductId());
                 ps.setLong(2, rule.getSuggestedProductId());
                 ps.setBoolean(3, rule.getIsPromoted() != null ? rule.getIsPromoted() : false);

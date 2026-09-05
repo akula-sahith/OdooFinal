@@ -148,7 +148,8 @@ public class QuotationService {
         boolean valid = false;
         switch (current) {
             case "DRAFT":
-                valid = "SENT".equals(target) || "REJECTED".equals(target) || "PENDING_APPROVAL".equals(target);
+                valid = "SENT".equals(target) || "REJECTED".equals(target) || "PENDING_APPROVAL".equals(target) ||
+                        "APPROVED".equals(target) || "UNDER_NEGOTIATION".equals(target) || "CONFIRMED".equals(target);
                 break;
             case "SENT":
                 valid = "UNDER_NEGOTIATION".equals(target) || "PENDING_APPROVAL".equals(target) ||
@@ -157,13 +158,13 @@ public class QuotationService {
                 break;
             case "UNDER_NEGOTIATION":
                 valid = "PENDING_APPROVAL".equals(target) || "APPROVED".equals(target) ||
-                        "REJECTED".equals(target) || "RETURNED_FOR_REVISION".equals(target) || "SENT".equals(target);
+                        "REJECTED".equals(target) || "RETURNED_FOR_REVISION".equals(target) || "SENT".equals(target) || "CONFIRMED".equals(target);
                 break;
             case "PENDING_APPROVAL":
                 valid = "APPROVED".equals(target) || "REJECTED".equals(target) || "RETURNED_FOR_REVISION".equals(target);
                 break;
             case "APPROVED":
-                valid = "CONFIRMED".equals(target) || "REJECTED".equals(target) || "RETURNED_FOR_REVISION".equals(target);
+                valid = "CONFIRMED".equals(target) || "REJECTED".equals(target) || "RETURNED_FOR_REVISION".equals(target) || "UNDER_NEGOTIATION".equals(target);
                 break;
             case "RETURNED_FOR_REVISION":
                 valid = "DRAFT".equals(target) || "SENT".equals(target) || "PENDING_APPROVAL".equals(target);

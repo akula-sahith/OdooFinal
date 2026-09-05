@@ -38,7 +38,7 @@ public class PriceListRepository {
             String sql = "INSERT INTO price_lists (discount_tier_id, currency, valid_from, valid_to) VALUES (?, ?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 if (priceList.getDiscountTierId() != null) {
                     ps.setLong(1, priceList.getDiscountTierId());
                 } else {

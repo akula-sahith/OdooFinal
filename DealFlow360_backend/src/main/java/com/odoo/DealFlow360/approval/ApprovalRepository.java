@@ -44,7 +44,7 @@ public class ApprovalRepository {
             String sql = "INSERT INTO approvals (quotation_id, approver_id, step_number, status, decision_reason, created_at, decided_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 ps.setLong(1, approval.getQuotationId());
                 if (approval.getApproverId() != null) {
                     ps.setLong(2, approval.getApproverId());

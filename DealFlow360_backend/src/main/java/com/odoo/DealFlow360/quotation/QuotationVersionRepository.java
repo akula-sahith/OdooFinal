@@ -43,7 +43,7 @@ public class QuotationVersionRepository {
             String sql = "INSERT INTO quotation_versions (quotation_id, version_number, status, total_amount, change_summary, created_at) VALUES (?, ?, ?, ?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 ps.setLong(1, version.getQuotationId());
                 ps.setInt(2, version.getVersionNumber());
                 ps.setString(3, version.getStatus());

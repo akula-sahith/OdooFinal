@@ -46,7 +46,7 @@ public class CustomerRequestRepository {
                          "VALUES (?, ?, ?, ?, ?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 ps.setLong(1, request.getCustomerId());
                 if (request.getQuotationId() != null) {
                     ps.setLong(2, request.getQuotationId());

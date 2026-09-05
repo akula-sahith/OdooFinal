@@ -40,7 +40,7 @@ public class CustomerContactRepository {
             String sql = "INSERT INTO customer_contacts (customer_id, name, email, phone, status) VALUES (?, ?, ?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 ps.setLong(1, contact.getCustomerId());
                 ps.setString(2, contact.getName());
                 ps.setString(3, contact.getEmail());

@@ -38,7 +38,7 @@ public class CategoryDiscountCeilingRepository {
             String sql = "INSERT INTO category_discount_ceilings (category_id, tier_id, max_discount_percent) VALUES (?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 ps.setLong(1, ceiling.getCategoryId());
                 ps.setLong(2, ceiling.getTierId());
                 ps.setBigDecimal(3, ceiling.getMaxDiscountPercent() != null ? ceiling.getMaxDiscountPercent() : BigDecimal.ZERO);

@@ -38,7 +38,7 @@ public class ApprovalChainStepRepository {
             String sql = "INSERT INTO approval_chain_steps (rule_id, step_number, role, user_id) VALUES (?, ?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 ps.setLong(1, step.getRuleId());
                 ps.setInt(2, step.getStepNumber());
                 ps.setString(3, step.getRole());

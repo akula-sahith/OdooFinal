@@ -38,7 +38,7 @@ public class ProductVariantRepository {
             String sql = "INSERT INTO product_variants (product_id, attribute_name, value, extra_price) VALUES (?, ?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                 ps.setLong(1, variant.getProductId());
                 ps.setString(2, variant.getAttributeName());
                 ps.setString(3, variant.getValue());

@@ -1,5 +1,6 @@
 package com.odoo.DealFlow360.negotiation;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -14,6 +15,9 @@ public class NegotiationRequest {
     private String requestType;
     private String description;
     private String status;
+    private BigDecimal counterDiscountPercent;
+    private String lineComments;
+    private BigDecimal proposedUnitPrice;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -22,12 +26,21 @@ public class NegotiationRequest {
 
     public NegotiationRequest(Long id, Long customerId, Long quotationId, String requestType,
                               String description, String status, Instant createdAt, Instant updatedAt) {
+        this(id, customerId, quotationId, requestType, description, status, null, null, null, createdAt, updatedAt);
+    }
+
+    public NegotiationRequest(Long id, Long customerId, Long quotationId, String requestType,
+                              String description, String status, BigDecimal counterDiscountPercent,
+                              String lineComments, BigDecimal proposedUnitPrice, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.customerId = customerId;
         this.quotationId = quotationId;
         this.requestType = requestType;
         this.description = description;
         this.status = status;
+        this.counterDiscountPercent = counterDiscountPercent;
+        this.lineComments = lineComments;
+        this.proposedUnitPrice = proposedUnitPrice;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -78,6 +91,30 @@ public class NegotiationRequest {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public BigDecimal getCounterDiscountPercent() {
+        return counterDiscountPercent;
+    }
+
+    public void setCounterDiscountPercent(BigDecimal counterDiscountPercent) {
+        this.counterDiscountPercent = counterDiscountPercent;
+    }
+
+    public String getLineComments() {
+        return lineComments;
+    }
+
+    public void setLineComments(String lineComments) {
+        this.lineComments = lineComments;
+    }
+
+    public BigDecimal getProposedUnitPrice() {
+        return proposedUnitPrice;
+    }
+
+    public void setProposedUnitPrice(BigDecimal proposedUnitPrice) {
+        this.proposedUnitPrice = proposedUnitPrice;
     }
 
     public Instant getCreatedAt() {
