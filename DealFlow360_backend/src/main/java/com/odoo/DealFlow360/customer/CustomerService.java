@@ -1,19 +1,34 @@
 package com.odoo.DealFlow360.customer;
 
 import com.odoo.DealFlow360.user.SalesTeam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
  * Business service handling Customer domain operations, validation,
- * sales team assignment semantics, and discount tier reference management.
+ * sales team assignment semantics, discount tier reference management, and JDBC repository integration.
  */
 @Service
 public class CustomerService {
 
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+
+    private final CustomerRepository customerRepository;
+
+    public CustomerService() {
+        this.customerRepository = null;
+    }
+
+    @Autowired
+    public CustomerService(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
+    }
 
     /**
      * Creates and validates a new Customer instance.
@@ -188,5 +203,55 @@ public class CustomerService {
      */
     public boolean hasDiscountTier(Customer customer) {
         return customer != null && customer.getDiscountTierId() != null;
+    }
+
+    /**
+     * Persists a Customer entity after domain validation.
+     */
+    public Customer saveCustomer(Customer customer) {
+        validateCustomer(customer);
+        if (customerRepository != null) {
+            return customerRepository.save(customer);
+        }
+        return customer;
+    }
+
+    /**
+     * Finds a Customer by ID using the repository.
+     */
+    public Optional<Customer> findCustomerById(Long id) {
+        if (customerRepository != null && id != null) {
+            return customerRepository.findById(id);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Finds all Customers assigned to a Sales Team using the repository.
+     */
+    public List<Customer> findCustomersBySalesTeamId(Long salesTeamId) {
+        if (customerRepository != null && salesTeamId != null) {
+            return customerRepository.findBySalesTeamId(salesTeamId);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Retrieves all Customers from database.
+     */
+    public List<Customer> findAllCustomers() {
+        if (customerRepository != null) {
+            return customerRepository.findAll();
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Deletes a Customer by ID.
+     */
+    public void deleteCustomer(Long id) {
+        if (customerRepository != null && id != null) {
+            customerRepository.deleteById(id);
+        }
     }
 }

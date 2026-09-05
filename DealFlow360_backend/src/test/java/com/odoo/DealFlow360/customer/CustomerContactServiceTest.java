@@ -70,6 +70,18 @@ class CustomerContactServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw exception when contact email is null or blank")
+    void testCreateContactMissingEmail() {
+        assertThatThrownBy(() -> contactService.createContact(10L, "John Doe", null, "123", "ACTIVE"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Contact email cannot be null or blank");
+
+        assertThatThrownBy(() -> contactService.createContact(10L, "John Doe", "   ", "123", "ACTIVE"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Contact email cannot be null or blank");
+    }
+
+    @Test
     @DisplayName("Should re-associate contact with another customer context")
     void testAssociateWithCustomer() {
         CustomerContact contact = contactService.createContact(10L, "Alice", "alice@example.com", null, null);

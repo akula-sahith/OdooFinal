@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldAlert, ArrowLeft, Home } from 'lucide-react';
-import { PrimaryButton } from '../../components/ui/PrimaryButton';
-import { SecondaryButton } from '../../components/ui/SecondaryButton';
+import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../hooks/auth/useAuth';
 
 export const PermissionDenied = () => {
@@ -29,20 +28,21 @@ export const PermissionDenied = () => {
 
       <div className="flex flex-col sm:flex-row items-center gap-3">
         <Link to="/company/dashboard">
-          <PrimaryButton portal="company" fullWidth={false} icon={<Home className="w-4 h-4" />}>
+          <Button variant="primary" size="md" leadingIcon={Home}>
             Return to Dashboard
-          </PrimaryButton>
+          </Button>
         </Link>
-        <button
-          type="button"
+        <Button
+          variant="outline"
+          size="md"
+          leadingIcon={ArrowLeft}
           onClick={() => window.history.back()}
-          className="w-full sm:w-auto"
         >
-          <SecondaryButton portal="company" fullWidth={false} icon={<ArrowLeft className="w-4 h-4" />}>
-            Go Back
-          </SecondaryButton>
-        </button>
+          Go Back
+        </Button>
       </div>
     </div>
   );
 };
+
+export default PermissionDenied;
