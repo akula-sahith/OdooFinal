@@ -43,6 +43,9 @@ import { WorkerProfile } from '../../pages/company/WorkerProfile';
 import { PermissionDenied } from '../../pages/company/PermissionDenied';
 import { NotFound } from '../../pages/company/NotFound';
 
+// Developer UI System Showcase
+import { UIShowcase } from '../../pages/dev/UIShowcase';
+
 // Guards
 import { ProtectedCustomerRoute } from './ProtectedCustomerRoute';
 import { ProtectedCompanyRoute } from './ProtectedCompanyRoute';
@@ -50,6 +53,9 @@ import { ProtectedCompanyRoute } from './ProtectedCompanyRoute';
 export const AppRouter = () => {
   return (
     <Routes>
+      {/* DEVELOPER UI SHOWCASE ROUTE */}
+      <Route path="/dev/ui" element={<UIShowcase />} />
+
       {/* ROOT ROUTE — DIRECT REDIRECT TO CUSTOMER LOGIN BY DEFAULT */}
       <Route path="/" element={<Navigate to="/c-entry-x9283f/login" replace />} />
 
@@ -90,9 +96,17 @@ export const AppRouter = () => {
       <Route path="/company">
         <Route index element={<Navigate to="/company/dashboard" replace />} />
 
-        {/* Workspace */}
+        {/* Workspace / Admin Dashboard */}
         <Route
           path="dashboard"
+          element={
+            <ProtectedCompanyRoute requiredPermission="dashboard.view">
+              <DashboardPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="admin/dashboard"
           element={
             <ProtectedCompanyRoute requiredPermission="dashboard.view">
               <DashboardPlaceholder />
