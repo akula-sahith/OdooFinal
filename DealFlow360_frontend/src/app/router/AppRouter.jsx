@@ -12,7 +12,7 @@ import { ResetPasswordPage } from '../../features/customer-auth/pages/ResetPassw
 import { CustomerVerify } from '../../pages/auth/customer/CustomerVerify';
 import { CustomerMFA } from '../../pages/auth/customer/CustomerMFA';
 
-// Customer Portal Workspace (Phase 9.1)
+// Customer Portal Workspace (Phase 9.1 & Phase 16)
 import { CustomerLayout } from '../../components/customer/CustomerLayout';
 import { CustomerDashboardPage } from '../../features/customer-account/pages/CustomerDashboardPage';
 import { CustomerProfilePage } from '../../features/customer-account/pages/CustomerProfilePage';
@@ -20,6 +20,10 @@ import { CustomerAccountPage } from '../../features/customer-account/pages/Custo
 import { CustomerRequestsPlaceholder } from '../../features/customer-account/pages/CustomerRequestsPlaceholder';
 import { CustomerConversationsPlaceholder } from '../../features/customer-account/pages/CustomerConversationsPlaceholder';
 import { CustomerQuotationsPlaceholder } from '../../features/customer-account/pages/CustomerQuotationsPlaceholder';
+import { CustomerOrderListPage } from '../../features/customer-account/pages/CustomerOrderListPage';
+import { CustomerOrderDetailPage } from '../../features/customer-account/pages/CustomerOrderDetailPage';
+import { CustomerShipmentListPage } from '../../features/customer-account/pages/CustomerShipmentListPage';
+import { CustomerShipmentDetailPage } from '../../features/customer-account/pages/CustomerShipmentDetailPage';
 
 // Customer Requirement Requests & Communication (Phase 9.2)
 import { CustomerRequestsPage } from '../../features/customer-requests/pages/CustomerRequestsPage';
@@ -182,7 +186,10 @@ export const AppRouter = () => {
         <Route path="conversations" element={<CustomerConversationsPlaceholder />} />
         <Route path="quotations" element={<CustomerQuotationPage />} />
         <Route path="quotations/:quotationId" element={<CustomerQuotationDetailPage />} />
-        <Route path="orders/:orderId" element={<CustomerOrderTrackingPage />} />
+        <Route path="orders" element={<CustomerOrderListPage />} />
+        <Route path="orders/:orderId" element={<CustomerOrderDetailPage />} />
+        <Route path="shipments" element={<CustomerShipmentListPage />} />
+        <Route path="shipments/:shipmentId" element={<CustomerShipmentDetailPage />} />
         <Route path="invoices" element={<CustomerInvoiceListPage />} />
         <Route path="invoices/:invoiceId" element={<CustomerInvoiceDetailPage />} />
         <Route path="payments" element={<CustomerPaymentListPage />} />

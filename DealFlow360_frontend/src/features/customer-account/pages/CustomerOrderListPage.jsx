@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Search, RefreshCw, Filter } from 'lucide-react';
-import { useCustomerInvoices } from '../hooks/useCustomerInvoices';
-import { CustomerInvoiceTable } from '../components/CustomerInvoiceTable';
+import { ShoppingCart, Search, RefreshCw, Filter, Calendar } from 'lucide-react';
+import { useCustomerOrders } from '../hooks/useCustomerOrders';
+import { CustomerOrderTable } from '../components/CustomerOrderTable';
 
-export const CustomerInvoiceListPage = () => {
+export const CustomerOrderListPage = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
 
-  const { invoices, loading, error, refetch, setFilters } = useCustomerInvoices({
+  const { orders, loading, error, refetch, setFilters } = useCustomerOrders({
     search: searchTerm,
     status: selectedStatus,
   });
@@ -29,7 +29,7 @@ export const CustomerInvoiceListPage = () => {
     return (
       <div className="py-20 text-center space-y-4 bg-white rounded-2xl border border-slate-200">
         <div className="w-10 h-10 border-4 border-[#714B67] border-t-transparent rounded-full animate-spin mx-auto"></div>
-        <p className="text-xs font-semibold text-slate-500">Loading commercial invoices directory...</p>
+        <p className="text-xs font-semibold text-slate-500">Loading customer order directory...</p>
       </div>
     );
   }
@@ -38,9 +38,9 @@ export const CustomerInvoiceListPage = () => {
     return (
       <div className="bg-white border border-rose-200 rounded-2xl p-12 text-center space-y-4">
         <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto">
-          <FileText className="w-6 h-6" />
+          <ShoppingCart className="w-6 h-6" />
         </div>
-        <h3 className="text-base font-extrabold text-slate-900">Unable to Load Invoices</h3>
+        <h3 className="text-base font-extrabold text-slate-900">Unable to Load Orders</h3>
         <p className="text-xs text-slate-500 max-w-sm mx-auto">{error}</p>
         <button
           type="button"
@@ -57,20 +57,20 @@ export const CustomerInvoiceListPage = () => {
     <div className="space-y-6 pb-16">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-black text-slate-900">Commercial Invoices & Accounts Statement</h1>
+        <h1 className="text-xl font-black text-slate-900">My Sales Orders</h1>
         <p className="text-xs text-slate-500 font-medium mt-0.5">
-          View issued billing statements, payment terms, remitted balances, and outstanding amounts.
+          Track confirmed customer orders, fulfillment progression, and delivery commitments.
         </p>
       </div>
 
-      {/* Toolbar & Filter Options */}
+      {/* Toolbar & Filters */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-3">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-md">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search by invoice number or order ref..."
+              placeholder="Search by order number or quotation ref..."
               value={searchTerm}
               onChange={handleSearchChange}
               className="w-full h-10 pl-9 pr-4 text-xs font-medium bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#714B67] outline-none transition-all"
@@ -78,7 +78,7 @@ export const CustomerInvoiceListPage = () => {
           </div>
 
           <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0 overflow-x-auto">
-            {['ALL', 'ISSUED', 'PARTIALLY_PAID', 'PAID', 'OVERDUE'].map((st) => (
+            {['ALL', 'CONFIRMED', 'FULFILLMENT_IN_PROGRESS', 'COMPLETED'].map((st) => (
               <button
                 key={st}
                 type="button"
@@ -89,22 +89,22 @@ export const CustomerInvoiceListPage = () => {
                     : 'text-slate-600 hover:bg-slate-200/60'
                 }`}
               >
-                {st === 'ALL' ? 'All Invoices' : st.replace(/_/g, ' ')}
+                {st === 'ALL' ? 'All Orders' : st.replace(/_/g, ' ')}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Invoices List Table or Zero State */}
-      {invoices.length > 0 ? (
-        <CustomerInvoiceTable invoices={invoices} />
+      {/* Orders Table or Empty State */}
+      {orders.length > 0 ? (
+        <CustomerOrderTable orders={orders} />
       ) : (
         <div className="bg-white border border-dashed border-slate-200 rounded-2xl p-16 text-center space-y-3">
-          <FileText className="w-10 h-10 text-slate-300 mx-auto" />
-          <h3 className="text-sm font-bold text-slate-900">No Invoices Available</h3>
+          <ShoppingCart className="w-10 h-10 text-slate-300 mx-auto" />
+          <h3 className="text-sm font-bold text-slate-900">No Orders Found</h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">
-            There are currently no commercial billing statements matching your search criteria.
+            There are currently no sales orders associated with your account matching the criteria.
           </p>
         </div>
       )}
@@ -112,4 +112,4 @@ export const CustomerInvoiceListPage = () => {
   );
 };
 
-export default CustomerInvoiceListPage;
+export default CustomerOrderListPage;

@@ -1,10 +1,20 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, MessageSquare, Tag, User, ShieldCheck } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Tag,
+  ShoppingCart,
+  Truck,
+  Receipt,
+  CreditCard,
+  FileText,
+  Bell,
+  User,
+} from 'lucide-react';
 
 /**
  * Customer Navigation Links
- * Dedicated navigation items for B2B Client Portal.
+ * Dedicated navigation items for B2B Client Portal (Phase 16).
  */
 export const CUSTOMER_NAV_ITEMS = [
   {
@@ -14,34 +24,52 @@ export const CUSTOMER_NAV_ITEMS = [
     icon: LayoutDashboard,
   },
   {
+    id: 'quotations',
+    label: 'Quotations',
+    route: '/customer/quotations',
+    icon: Tag,
+  },
+  {
+    id: 'orders',
+    label: 'Orders',
+    route: '/customer/orders',
+    icon: ShoppingCart,
+  },
+  {
+    id: 'shipments',
+    label: 'Shipments',
+    route: '/customer/shipments',
+    icon: Truck,
+  },
+  {
+    id: 'invoices',
+    label: 'Invoices',
+    route: '/customer/invoices',
+    icon: Receipt,
+  },
+  {
+    id: 'payments',
+    label: 'Payments',
+    route: '/customer/payments',
+    icon: CreditCard,
+  },
+  {
     id: 'requests',
     label: 'My Requests',
     route: '/customer/requests',
     icon: FileText,
   },
   {
-    id: 'conversations',
-    label: 'Conversations',
-    route: '/customer/conversations',
-    icon: MessageSquare,
-  },
-  {
-    id: 'quotations',
-    label: 'My Quotations',
-    route: '/customer/quotations',
-    icon: Tag,
+    id: 'notifications',
+    label: 'Notifications',
+    route: '/customer/notifications',
+    icon: Bell,
   },
   {
     id: 'profile',
     label: 'Profile',
     route: '/customer/profile',
     icon: User,
-  },
-  {
-    id: 'account',
-    label: 'Account',
-    route: '/customer/account',
-    icon: ShieldCheck,
   },
 ];
 

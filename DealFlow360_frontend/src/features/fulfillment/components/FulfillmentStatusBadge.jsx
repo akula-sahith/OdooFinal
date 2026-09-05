@@ -77,3 +77,9 @@ export const FulfillmentStatusBadge = ({ status, type = 'FULFILLMENT', className
     </span>
   );
 };
+
+export const ShipmentStatusBadge = (props) => (
+  <FulfillmentStatusBadge type="SHIPMENT" {...props} />
+);
+
+export default FulfillmentStatusBadge;

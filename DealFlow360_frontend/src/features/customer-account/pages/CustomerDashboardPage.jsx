@@ -1,30 +1,48 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, FileText, MessageSquare, Tag, ShieldCheck, ArrowRight } from 'lucide-react';
-import { PageHeader } from '../../../components/ui/PageHeader/PageHeader';
+import {
+  Building2,
+  Tag,
+  ShoppingCart,
+  Truck,
+  Receipt,
+  CreditCard,
+  ArrowRight,
+  Activity,
+  CheckCircle2,
+  Clock,
+  ShieldCheck,
+} from 'lucide-react';
 import { Card } from '../../../components/ui/Card/Card';
 import { Button } from '../../../components/ui/Button/Button';
 import { StatusBadge } from '../../../components/ui/StatusBadge/StatusBadge';
 import { useCustomerAuth } from '../../customer-auth/hooks/useCustomerAuth';
 import { useCustomerAccount } from '../hooks/useCustomerAccount';
-import { useUnreadNotifications } from '../../notifications/hooks/useUnreadNotifications';
+import { useCustomerDashboard } from '../hooks/useCustomerDashboard';
+import { useCustomerBalance } from '../hooks/useCustomerBalance';
+import { CustomerBalanceSummary } from '../components/CustomerBalanceSummary';
+import { CommercialTimeline } from '../components/CommercialTimeline';
 
 export const CustomerDashboardPage = () => {
   const navigate = useNavigate();
   const { customerUser } = useCustomerAuth();
   const { profile } = useCustomerAccount();
-  const { requests } = useCustomerRequests();
-  const { unreadCount: unreadNotifications } = useUnreadNotifications('CUSTOMER');
+  const { dashboard, loading: dashLoading } = useCustomerDashboard();
+  const { balance, loading: balLoading } = useCustomerBalance();
 
-  const displayName = customerUser?.name || profile?.firstName || 'Client';
+  const displayName = customerUser?.name || profile?.firstName || customerUser?.companyName || 'Client User';
   const companyName = customerUser?.companyName || profile?.companyName || 'Enterprise Account';
 
-  const activeCount = requests.filter((r) => r.status !== 'CLOSED' && r.status !== 'CANCELLED').length;
-  const draftCount = requests.filter((r) => r.status === 'DRAFT').length;
-  const clarificationCount = requests.filter((r) => r.status === 'REQUIREMENT_CLARIFICATION').length;
+  const {
+    activeQuotations = 0,
+    acceptedQuotations = 0,
+    activeOrders = 0,
+    pendingDeliveries = 0,
+    recentActivities = [],
+  } = dashboard || {};
 
   return (
-    <div className="space-y-6 text-left">
+    <div className="space-y-6 text-left pb-16">
       {/* Welcome Banner Header */}
       <div className="bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
         <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -37,7 +55,7 @@ export const CustomerDashboardPage = () => {
               Welcome back, {displayName}
             </h1>
             <p className="text-xs text-slate-300 mt-1 max-w-lg leading-relaxed">
-              Your official B2B portal for managing commercial requirements, proposal requests, custom pricing, and orders.
+              Official Client Procurement & Order Billing Workspace. Monitor live orders, shipment dispatches, commercial invoices, and remittance history.
             </p>
           </div>
 
@@ -47,120 +65,194 @@ export const CustomerDashboardPage = () => {
         </div>
       </div>
 
-      {/* Feature Foundation Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Requests Shell */}
-        <Card variant="default" padding="lg" className="flex flex-col justify-between h-full">
-          <div>
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#714B67] flex items-center justify-center mb-4 font-bold border border-purple-200">
-              <FileText className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-slate-900">My Requests</h3>
-            <p className="text-xs text-slate-500 mt-1">
-              Submit commercial product requirement proposals to assigned sales engineers.
-            </p>
-            <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-              {requests.length > 0 ? (
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-700">Active Requests: <span className="font-bold text-[#714B67]">{activeCount}</span></span>
-                  <span className="text-slate-500">Drafts: <span className="font-bold text-slate-800">{draftCount}</span></span>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <p className="text-xs font-semibold text-slate-600">No active requests</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Your submitted requirements will appear here.</p>
-                </div>
-              )}
-            </div>
-          </div>
+      {/* Authoritative Financial Balance Summary */}
+      <CustomerBalanceSummary balance={balance} loading={balLoading} />
 
-          <div className="pt-4 mt-4 border-t border-slate-100">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/customer/requests')}
-              className="w-full justify-between"
-            >
-              <span>View Requests</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Button>
-          </div>
-        </Card>
+      {/* End-to-End Commercial Lifecycle Timeline */}
+      <CommercialTimeline />
 
-        {/* Conversations Shell */}
-        <Card variant="default" padding="lg" className="flex flex-col justify-between h-full">
+      {/* 4 Primary Operational Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Quotations Metric */}
+        <Card padding="md" variant="default" className="flex flex-col justify-between h-full border border-slate-200/90 shadow-2xs">
           <div>
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#714B67] flex items-center justify-center mb-4 font-bold border border-purple-200">
-              <MessageSquare className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-slate-900">Conversations</h3>
-            <p className="text-xs text-slate-500 mt-1">
-              Direct commercial communication with assigned DealFlow360 representatives.
-            </p>
-            <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="font-semibold text-slate-700">Needs Clarification: <span className="font-bold text-amber-700">{clarificationCount}</span></span>
-                <span className="font-semibold text-slate-700">Unread Alerts: <span className="font-bold text-[#714B67]">{unreadNotifications}</span></span>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
+                Quotations
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-purple-50 text-[#714B67] flex items-center justify-center border border-purple-200">
+                <Tag className="w-4 h-4" />
               </div>
-              <p className="text-[11px] text-slate-400 mt-1">Real-time messaging thread with assigned sales engineers.</p>
+            </div>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-2xl font-black text-slate-900">{activeQuotations}</span>
+              <span className="text-xs text-slate-500 font-medium">({acceptedQuotations} Accepted)</span>
             </div>
           </div>
-
-          <div className="pt-4 mt-4 border-t border-slate-100">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/customer/conversations')}
-              className="w-full justify-between"
-            >
-              <span>View Conversations</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Button>
-          </div>
-        </Card>
-
-        {/* Quotations Shell */}
-        <Card variant="default" padding="lg" className="flex flex-col justify-between h-full">
-          <div>
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#714B67] flex items-center justify-center mb-4 font-bold border border-purple-200">
-              <Tag className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-slate-900">My Quotations</h3>
-            <p className="text-xs text-slate-500 mt-1">
-              Review custom pricing proposals, line items, discounts, and approval terms.
-            </p>
-            <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-center">
-              <p className="text-xs font-semibold text-slate-600">No proposals available</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">Commercial quotations will appear here.</p>
-            </div>
-          </div>
-
-          <div className="pt-4 mt-4 border-t border-slate-100">
+          <div className="pt-3 mt-3 border-t border-slate-100">
             <Button
               variant="outline"
               size="sm"
               onClick={() => navigate('/customer/quotations')}
-              className="w-full justify-between"
+              className="w-full justify-between text-xs"
             >
-              <span>View Quotations</span>
+              <span>View Proposals</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        </Card>
+
+        {/* Active Orders Metric */}
+        <Card padding="md" variant="default" className="flex flex-col justify-between h-full border border-slate-200/90 shadow-2xs">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
+                Active Orders
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-purple-50 text-[#714B67] flex items-center justify-center border border-purple-200">
+                <ShoppingCart className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-2">
+              <span className="text-2xl font-black text-slate-900">{activeOrders}</span>
+              <span className="text-xs text-slate-500 font-medium ml-2">In Pipeline</span>
+            </div>
+          </div>
+          <div className="pt-3 mt-3 border-t border-slate-100">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/customer/orders')}
+              className="w-full justify-between text-xs"
+            >
+              <span>View Orders</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        </Card>
+
+        {/* Pending Deliveries Metric */}
+        <Card padding="md" variant="default" className="flex flex-col justify-between h-full border border-slate-200/90 shadow-2xs">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
+                Pending Deliveries
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-[#F7F2F5] text-[#714B67] flex items-center justify-center border border-[#714B67]/20">
+                <Truck className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-2">
+              <span className="text-2xl font-black text-slate-900">{pendingDeliveries}</span>
+              <span className="text-xs text-slate-500 font-medium ml-2">Consignment(s)</span>
+            </div>
+          </div>
+          <div className="pt-3 mt-3 border-t border-slate-100">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/customer/shipments')}
+              className="w-full justify-between text-xs"
+            >
+              <span>Track Shipments</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        </Card>
+
+        {/* Payments Summary Metric */}
+        <Card padding="md" variant="default" className="flex flex-col justify-between h-full border border-slate-200/90 shadow-2xs">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
+                Payment History
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200">
+                <CreditCard className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-2">
+              <span className="text-2xl font-black text-emerald-700">{dashboard?.recentPaymentsCount || 0}</span>
+              <span className="text-xs text-slate-500 font-medium ml-2">Transactions</span>
+            </div>
+          </div>
+          <div className="pt-3 mt-3 border-t border-slate-100">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/customer/payments')}
+              className="w-full justify-between text-xs"
+            >
+              <span>View Payments</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Button>
           </div>
         </Card>
       </div>
 
-      {/* Security Info Footnote */}
+      {/* Recent Commercial Activity Feed */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-2xs space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+            <Activity className="w-4 h-4 text-[#714B67]" />
+            Recent Commercial Activity
+          </h3>
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Live Feed</span>
+        </div>
+
+        <div className="divide-y divide-slate-100">
+          {recentActivities.length > 0 ? (
+            recentActivities.map((act) => (
+              <div
+                key={act.id}
+                onClick={() => act.link && navigate(act.link)}
+                className="py-3 flex items-center justify-between hover:bg-slate-50 px-2 rounded-xl transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-purple-50 text-[#714B67] flex items-center justify-center shrink-0 border border-purple-200">
+                    {act.type === 'PAYMENT_RECEIVED' ? (
+                      <CreditCard className="w-4 h-4 text-emerald-600" />
+                    ) : act.type === 'INVOICE_ISSUED' ? (
+                      <Receipt className="w-4 h-4 text-indigo-600" />
+                    ) : act.type === 'SHIPMENT_DISPATCHED' ? (
+                      <Truck className="w-4 h-4 text-amber-600" />
+                    ) : (
+                      <CheckCircle2 className="w-4 h-4 text-[#714B67]" />
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-extrabold text-slate-900">{act.title}</h4>
+                    <p className="text-xs text-slate-500 font-medium">{act.description}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-slate-400" />
+                    {new Date(act.timestamp).toLocaleDateString()}
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-xs text-slate-400 py-6 text-center">No recent commercial activity recorded.</p>
+          )}
+        </div>
+      </div>
+
+      {/* Security Domain Isolation Footnote */}
       <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between text-xs text-slate-500">
         <span className="flex items-center gap-2 font-medium">
           <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          Enterprise Customer Domain Isolation Active
+          Customer Ownership & RBAC Domain Isolation Active
         </span>
         <button
           type="button"
-          onClick={() => navigate('/customer/account')}
+          onClick={() => navigate('/customer/profile')}
           className="text-[#714B67] font-bold hover:underline"
         >
-          Manage Account Settings
+          View Client Profile →
         </button>
       </div>
     </div>
