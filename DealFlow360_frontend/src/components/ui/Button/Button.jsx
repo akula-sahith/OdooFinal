@@ -80,7 +80,7 @@ export const Button = forwardRef(({
       ) : (
         <>
           {LeadingIcon && <LeadingIcon className={`${iconSizes[size] || 'w-4 h-4'} shrink-0`} />}
-          {children && <span>{children}</span>}
+          {children && <span className="inline-flex items-center gap-2 whitespace-nowrap">{children}</span>}
           {TrailingIcon && <TrailingIcon className={`${iconSizes[size] || 'w-4 h-4'} shrink-0`} />}
         </>
       )}

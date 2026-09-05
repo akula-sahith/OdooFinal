@@ -8,10 +8,15 @@ export function usePermissions() {
   const checkPermission = useMemo(() => {
     return (requiredPermission) => {
       if (!requiredPermission) return true;
-      if (permissions.includes('*') || permissions.includes('admin.all')) return true;
+      if (role === 'Admin' || permissions.includes('*') || permissions.includes('admin.all')) return true;
+      
+      // Allow manage permissions to cover specific actions (e.g., products.manage covers products.create, products.update)
+      const domain = requiredPermission.split('.')[0];
+      if (permissions.includes(`${domain}.manage`)) return true;
+      
       return permissions.includes(requiredPermission);
     };
-  }, [permissions]);
+  }, [permissions, role]);
 
   const checkAnyPermission = useMemo(() => {
     return (requiredPermissions = []) => {

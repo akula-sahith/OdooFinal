@@ -10,10 +10,14 @@ export const PageHeader = ({
   breadcrumbs = [], // [{ label: 'Dashboard', href: '/company/dashboard' }]
   title,
   description,
+  subtitle,
   actions,
+  action,
   badge,
   className = '',
 }) => {
+  const headerDescription = description || subtitle;
+  const headerActions = actions || action;
   return (
     <div className={`space-y-2 mb-6 text-left ${className}`}>
       {/* Breadcrumb Navigation */}
@@ -48,16 +52,16 @@ export const PageHeader = ({
             </h1>
             {badge && <div>{badge}</div>}
           </div>
-          {description && (
+          {headerDescription && (
             <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed max-w-3xl">
-              {description}
+              {headerDescription}
             </p>
           )}
         </div>
 
-        {actions && (
+        {headerActions && (
           <div className="flex items-center gap-2.5 shrink-0 pt-2 sm:pt-0">
-            {actions}
+            {headerActions}
           </div>
         )}
       </div>

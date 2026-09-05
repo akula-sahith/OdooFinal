@@ -27,8 +27,6 @@ import { UsersPlaceholder } from '../../pages/company/UsersPlaceholder';
 import { UserDetailsPlaceholder } from '../../pages/company/UserDetailsPlaceholder';
 import { RolesPlaceholder } from '../../pages/company/RolesPlaceholder';
 import { RoleDetailsPlaceholder } from '../../pages/company/RoleDetailsPlaceholder';
-import { ProductsPlaceholder } from '../../pages/company/ProductsPlaceholder';
-import { ProductDetailsPlaceholder } from '../../pages/company/ProductDetailsPlaceholder';
 import { PricingPlaceholder } from '../../pages/company/PricingPlaceholder';
 import { PricingDetailsPlaceholder } from '../../pages/company/PricingDetailsPlaceholder';
 import { QuotationsPlaceholder } from '../../pages/company/QuotationsPlaceholder';
@@ -42,6 +40,19 @@ import { SettingsPlaceholder } from '../../pages/company/SettingsPlaceholder';
 import { WorkerProfile } from '../../pages/company/WorkerProfile';
 import { PermissionDenied } from '../../pages/company/PermissionDenied';
 import { NotFound } from '../../pages/company/NotFound';
+
+// Phase 4 — Admin Product Catalogue & Category Management
+import { ProductListPage } from '../../features/products/pages/ProductListPage';
+import { ProductCreatePage } from '../../features/products/pages/ProductCreatePage';
+import { ProductDetailPage } from '../../features/products/pages/ProductDetailPage';
+import { ProductEditPage } from '../../features/products/pages/ProductEditPage';
+import { CategoryListPage } from '../../features/products/pages/CategoryListPage';
+
+// Phase 5 — Admin Price List Management
+import { PriceListPage } from '../../features/price-lists/pages/PriceListPage';
+import { PriceListCreatePage } from '../../features/price-lists/pages/PriceListCreatePage';
+import { PriceListDetailPage } from '../../features/price-lists/pages/PriceListDetailPage';
+import { PriceListEditPage } from '../../features/price-lists/pages/PriceListEditPage';
 
 // Developer UI System Showcase
 import { UIShowcase } from '../../pages/dev/UIShowcase';
@@ -166,39 +177,88 @@ export const AppRouter = () => {
           }
         />
 
-        {/* Catalog */}
+        {/* Catalog — Phase 4 Admin Product Catalogue & Category Management */}
         <Route
           path="products"
           element={
             <ProtectedCompanyRoute requiredPermission="products.view">
-              <ProductsPlaceholder />
+              <ProductListPage />
             </ProtectedCompanyRoute>
           }
         />
         <Route
-          path="products/:id"
+          path="products/new"
+          element={
+            <ProtectedCompanyRoute requiredPermission="products.create">
+              <ProductCreatePage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="products/categories"
+          element={
+            <ProtectedCompanyRoute requiredPermission="categories.view">
+              <CategoryListPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="products/:productId"
           element={
             <ProtectedCompanyRoute requiredPermission="products.view">
-              <ProductDetailsPlaceholder />
+              <ProductDetailPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="products/:productId/edit"
+          element={
+            <ProtectedCompanyRoute requiredPermission="products.update">
+              <ProductEditPage />
             </ProtectedCompanyRoute>
           }
         />
 
+        {/* Phase 5 — Admin Price List Management */}
         <Route
-          path="pricing"
+          path="price-lists"
           element={
             <ProtectedCompanyRoute requiredPermission="pricing.view">
-              <PricingPlaceholder />
+              <PriceListPage />
             </ProtectedCompanyRoute>
           }
         />
         <Route
-          path="pricing/:id"
+          path="price-lists/new"
           element={
-            <ProtectedCompanyRoute requiredPermission="pricing.view">
-              <PricingDetailsPlaceholder />
+            <ProtectedCompanyRoute requiredPermission="pricing.create">
+              <PriceListCreatePage />
             </ProtectedCompanyRoute>
           }
+        />
+        <Route
+          path="price-lists/:priceListId"
+          element={
+            <ProtectedCompanyRoute requiredPermission="pricing.view">
+              <PriceListDetailPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="price-lists/:priceListId/edit"
+          element={
+            <ProtectedCompanyRoute requiredPermission="pricing.update">
+              <PriceListEditPage />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="pricing"
+          element={<Navigate to="/company/price-lists" replace />}
+        />
+        <Route
+          path="pricing/:id"
+          element={<Navigate to="/company/price-lists" replace />}
         />
 
         {/* Management */}
