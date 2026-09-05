@@ -1,5 +1,5 @@
 import React from 'react';
-import { Package, Tag, Sliders, ShieldCheck, Warehouse, CreditCard, ArrowUpRight } from 'lucide-react';
+import { Package, Tag, Sliders, ShieldCheck, Warehouse, ArrowUpRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../../../components/ui/Card';
 import { Skeleton } from '../../../components/feedback/Skeleton';
@@ -7,10 +7,10 @@ import { ErrorState } from '../../../components/feedback/ErrorState';
 
 /**
  * Configuration Health Summary Cards Section
- * Displays setup metrics for Products, Price Lists, Discount Rules, Approval Chains, Warehouses, Subscription Plans.
+ * Displays setup metrics for Products, Price Lists, Discount Tiers, Approval Chains, and Warehouses.
  */
 export const ConfigurationHealthSection = ({
-  health = null, // { productsCount, priceListsCount, discountRulesCount, approvalChainsCount, warehousesCount, subscriptionPlansCount }
+  health = null, // { productsCount, priceListsCount, discountRulesCount, approvalChainsCount, warehousesCount }
   isLoading = false,
   error = null,
   onRetry,
@@ -19,8 +19,8 @@ export const ConfigurationHealthSection = ({
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {Array.from({ length: 6 }).map((_, idx) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {Array.from({ length: 5 }).map((_, idx) => (
           <Card key={idx} variant="standard" className="p-4">
             <Skeleton variant="text" width="60%" />
             <div className="py-2">
@@ -87,18 +87,10 @@ export const ConfigurationHealthSection = ({
       value: health?.warehousesCount,
       color: 'bg-emerald-50 text-emerald-700 border-emerald-100',
     },
-    {
-      key: 'subscriptions',
-      title: 'Subscription Plans',
-      icon: CreditCard,
-      destination: '/company/settings',
-      value: health?.subscriptionPlansCount,
-      color: 'bg-purple-50 text-purple-700 border-purple-100',
-    },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
       {items.map((cfg) => {
         const Icon = cfg.icon;
         const hasVal = cfg.value !== undefined && cfg.value !== null;
