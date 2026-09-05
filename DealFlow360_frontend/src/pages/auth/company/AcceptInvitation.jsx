@@ -183,7 +183,7 @@ export const AcceptInvitation = () => {
 
           <PrimaryButton
             portal="company"
-            onClick={() => navigate('/m-entry-z7829a/workspace')}
+            onClick={() => navigate('/company/dashboard')}
             icon={<ArrowRight className="w-4 h-4" />}
           >
             Enter Internal Workspace

@@ -35,10 +35,48 @@ export const AuthProvider = ({ children }) => {
   const permissions = useMemo(() => {
     if (!user) return [];
     if (user.portal === 'customer') return ['customer.dashboard', 'customer.orders', 'customer.quotes'];
-    if (user.role === 'Admin') return ['admin.all', 'company.manage', 'users.invite'];
-    if (user.role === 'Sales Manager') return ['sales.all', 'team.manage'];
-    if (user.role === 'Salesperson') return ['sales.view', 'quotes.create'];
-    return ['company.workspace'];
+    
+    // Role-based permissions matching DealFlow360 enterprise security model
+    if (user.role === 'Admin') {
+      return [
+        'dashboard.view',
+        'customers.view', 'customers.manage',
+        'users.view', 'users.manage',
+        'roles.view', 'roles.manage',
+        'products.view', 'products.manage',
+        'pricing.view', 'pricing.manage',
+        'quotations.view', 'quotations.manage',
+        'approvals.view', 'approvals.manage',
+        'orders.view', 'orders.manage',
+        'security.view', 'audit_logs.view',
+        'settings.view', 'settings.manage'
+      ];
+    }
+
+    if (user.role === 'Sales Manager') {
+      return [
+        'dashboard.view',
+        'customers.view', 'customers.manage',
+        'users.view',
+        'products.view',
+        'pricing.view',
+        'quotations.view', 'quotations.manage',
+        'approvals.view',
+        'orders.view', 'orders.manage'
+      ];
+    }
+
+    if (user.role === 'Salesperson') {
+      return [
+        'dashboard.view',
+        'customers.view',
+        'products.view',
+        'quotations.view',
+        'orders.view'
+      ];
+    }
+
+    return ['dashboard.view', 'customers.view'];
   }, [user]);
 
   // Login action
@@ -148,6 +186,31 @@ export const AuthProvider = ({ children }) => {
 
   const clearError = () => setError(null);
 
+  // Role switcher helper for testing permission levels
+  const switchRole = (targetRole) => {
+    let email = 'admin@dealflow360.com';
+    let fullName = 'System Administrator';
+    if (targetRole === 'Sales Manager') {
+      email = 'manager@dealflow360.com';
+      fullName = 'Sarah Jenkins';
+    } else if (targetRole === 'Salesperson') {
+      email = 'rahul@dealflow360.com';
+      fullName = 'Rahul Kumar';
+    }
+    const updatedUser = {
+      ...(user || {}),
+      id: user?.id || 'usr_staff_01',
+      email,
+      fullName,
+      role: targetRole,
+      portal: 'company',
+    };
+    setUser(updatedUser);
+    try {
+      localStorage.setItem('dealflow360_user', JSON.stringify(updatedUser));
+    } catch (e) {}
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -166,6 +229,7 @@ export const AuthProvider = ({ children }) => {
         forgotPassword,
         resetPassword,
         logout,
+        switchRole,
         clearError,
       }}
     >

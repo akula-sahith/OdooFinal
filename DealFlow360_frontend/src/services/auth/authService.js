@@ -87,15 +87,36 @@ class AuthService {
         err.code = 'INVALID_CREDENTIALS';
         throw err;
       }
+
+      // Determine company role based on email or prefill selection
+      let role = 'Salesperson';
+      let name = email.split('@')[0].replace('.', ' ');
+
+      if (portal === 'company') {
+        if (email.includes('admin')) {
+          role = 'Admin';
+          name = 'Admin User';
+        } else if (email.includes('manager')) {
+          role = 'Sales Manager';
+          name = 'Sales Manager';
+        } else {
+          role = 'Salesperson';
+          name = 'Rahul Kumar';
+        }
+      }
+
       return {
         user: {
           id: 'usr_101',
           email,
-          name: email.split('@')[0].replace('.', ' '),
+          name,
+          fullName: name,
           portal,
           status: 'ACTIVE',
-          role: portal === 'company' ? 'Salesperson' : undefined,
+          role: portal === 'company' ? role : undefined,
           companyName: portal === 'customer' ? 'Acme Enterprises' : 'DealFlow360 Internal',
+          department: portal === 'company' ? (role === 'Admin' ? 'Executive Administration' : 'Commercial Sales') : undefined,
+          employeeId: portal === 'company' ? 'DF360-EMP-9042' : undefined,
         },
         requiresMfa: false,
         token: 'session_token_ready',

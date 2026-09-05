@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
-// Customer Pages
+// Customer Auth Pages
 import { CustomerLogin } from '../../pages/auth/customer/CustomerLogin';
 import { CustomerSignup } from '../../pages/auth/customer/CustomerSignup';
 import { CustomerVerify } from '../../pages/auth/customer/CustomerVerify';
@@ -9,16 +9,39 @@ import { CustomerForgotPassword } from '../../pages/auth/customer/CustomerForgot
 import { CustomerResetPassword } from '../../pages/auth/customer/CustomerResetPassword';
 import { CustomerMFA } from '../../pages/auth/customer/CustomerMFA';
 
-// Company Pages
+// Company Auth Pages
 import { CompanyLogin } from '../../pages/auth/company/CompanyLogin';
 import { AcceptInvitation } from '../../pages/auth/company/AcceptInvitation';
 import { CompanyForgotPassword } from '../../pages/auth/company/CompanyForgotPassword';
 import { CompanyResetPassword } from '../../pages/auth/company/CompanyResetPassword';
 import { CompanyMFA } from '../../pages/auth/company/CompanyMFA';
 
-// Workspace Previews
+// Customer Workspace Preview
 import { CustomerWorkspacePreview } from '../../pages/workspace/CustomerWorkspacePreview';
-import { CompanyWorkspacePreview } from '../../pages/workspace/CompanyWorkspacePreview';
+
+// Company Application Shell Placeholders
+import { DashboardPlaceholder } from '../../pages/company/DashboardPlaceholder';
+import { CustomersPlaceholder } from '../../pages/company/CustomersPlaceholder';
+import { CustomerDetailsPlaceholder } from '../../pages/company/CustomerDetailsPlaceholder';
+import { UsersPlaceholder } from '../../pages/company/UsersPlaceholder';
+import { UserDetailsPlaceholder } from '../../pages/company/UserDetailsPlaceholder';
+import { RolesPlaceholder } from '../../pages/company/RolesPlaceholder';
+import { RoleDetailsPlaceholder } from '../../pages/company/RoleDetailsPlaceholder';
+import { ProductsPlaceholder } from '../../pages/company/ProductsPlaceholder';
+import { ProductDetailsPlaceholder } from '../../pages/company/ProductDetailsPlaceholder';
+import { PricingPlaceholder } from '../../pages/company/PricingPlaceholder';
+import { PricingDetailsPlaceholder } from '../../pages/company/PricingDetailsPlaceholder';
+import { QuotationsPlaceholder } from '../../pages/company/QuotationsPlaceholder';
+import { QuotationDetailsPlaceholder } from '../../pages/company/QuotationDetailsPlaceholder';
+import { ApprovalsPlaceholder } from '../../pages/company/ApprovalsPlaceholder';
+import { OrdersPlaceholder } from '../../pages/company/OrdersPlaceholder';
+import { OrderDetailsPlaceholder } from '../../pages/company/OrderDetailsPlaceholder';
+import { SecurityPlaceholder } from '../../pages/company/SecurityPlaceholder';
+import { AuditLogsPlaceholder } from '../../pages/company/AuditLogsPlaceholder';
+import { SettingsPlaceholder } from '../../pages/company/SettingsPlaceholder';
+import { WorkerProfile } from '../../pages/company/WorkerProfile';
+import { PermissionDenied } from '../../pages/company/PermissionDenied';
+import { NotFound } from '../../pages/company/NotFound';
 
 // Guards
 import { ProtectedCustomerRoute } from './ProtectedCustomerRoute';
@@ -27,7 +50,7 @@ import { ProtectedCompanyRoute } from './ProtectedCompanyRoute';
 export const AppRouter = () => {
   return (
     <Routes>
-      {/* ROOT ROUTE — DIRECT REDIRECT (NO HOMEPAGE) */}
+      {/* ROOT ROUTE — DIRECT REDIRECT TO CUSTOMER LOGIN BY DEFAULT */}
       <Route path="/" element={<Navigate to="/c-entry-x9283f/login" replace />} />
 
       {/* OBFUSCATED CUSTOMER PORTAL ROUTES */}
@@ -49,7 +72,7 @@ export const AppRouter = () => {
         <Route path="*" element={<Navigate to="/c-entry-x9283f/login" replace />} />
       </Route>
 
-      {/* OBFUSCATED COMPANY PORTAL ROUTES */}
+      {/* OBFUSCATED COMPANY STAFF ENTRY ROUTES */}
       <Route path="/m-entry-z7829a">
         <Route path="login" element={<CompanyLogin />} />
         <Route path="accept-invite" element={<AcceptInvitation />} />
@@ -58,13 +81,221 @@ export const AppRouter = () => {
         <Route path="mfa" element={<CompanyMFA />} />
         <Route
           path="workspace"
+          element={<Navigate to="/company/dashboard" replace />}
+        />
+        <Route path="*" element={<Navigate to="/m-entry-z7829a/login" replace />} />
+      </Route>
+
+      {/* PHASE 2 — COMPANY APPLICATION SHELL ROUTES */}
+      <Route path="/company">
+        <Route index element={<Navigate to="/company/dashboard" replace />} />
+
+        {/* Workspace */}
+        <Route
+          path="dashboard"
           element={
-            <ProtectedCompanyRoute>
-              <CompanyWorkspacePreview />
+            <ProtectedCompanyRoute requiredPermission="dashboard.view">
+              <DashboardPlaceholder />
             </ProtectedCompanyRoute>
           }
         />
-        <Route path="*" element={<Navigate to="/m-entry-z7829a/login" replace />} />
+
+        {/* Sales */}
+        <Route
+          path="customers"
+          element={
+            <ProtectedCompanyRoute requiredPermission="customers.view">
+              <CustomersPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="customers/:id"
+          element={
+            <ProtectedCompanyRoute requiredPermission="customers.view">
+              <CustomerDetailsPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        <Route
+          path="quotations"
+          element={
+            <ProtectedCompanyRoute requiredPermission="quotations.view">
+              <QuotationsPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="quotations/:id"
+          element={
+            <ProtectedCompanyRoute requiredPermission="quotations.view">
+              <QuotationDetailsPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        <Route
+          path="orders"
+          element={
+            <ProtectedCompanyRoute requiredPermission="orders.view">
+              <OrdersPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="orders/:id"
+          element={
+            <ProtectedCompanyRoute requiredPermission="orders.view">
+              <OrderDetailsPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        {/* Catalog */}
+        <Route
+          path="products"
+          element={
+            <ProtectedCompanyRoute requiredPermission="products.view">
+              <ProductsPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="products/:id"
+          element={
+            <ProtectedCompanyRoute requiredPermission="products.view">
+              <ProductDetailsPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        <Route
+          path="pricing"
+          element={
+            <ProtectedCompanyRoute requiredPermission="pricing.view">
+              <PricingPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="pricing/:id"
+          element={
+            <ProtectedCompanyRoute requiredPermission="pricing.view">
+              <PricingDetailsPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        {/* Management */}
+        <Route
+          path="users"
+          element={
+            <ProtectedCompanyRoute requiredPermission="users.view">
+              <UsersPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="users/:id"
+          element={
+            <ProtectedCompanyRoute requiredPermission="users.view">
+              <UserDetailsPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        <Route
+          path="roles"
+          element={
+            <ProtectedCompanyRoute requiredPermission="roles.view">
+              <RolesPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+        <Route
+          path="roles/:id"
+          element={
+            <ProtectedCompanyRoute requiredPermission="roles.view">
+              <RoleDetailsPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        <Route
+          path="approvals"
+          element={
+            <ProtectedCompanyRoute requiredPermission="approvals.view">
+              <ApprovalsPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        {/* System */}
+        <Route
+          path="security"
+          element={
+            <ProtectedCompanyRoute requiredPermission="security.view">
+              <SecurityPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        <Route
+          path="audit-logs"
+          element={
+            <ProtectedCompanyRoute requiredPermission="audit_logs.view">
+              <AuditLogsPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        <Route
+          path="settings"
+          element={
+            <ProtectedCompanyRoute requiredPermission="settings.view">
+              <SettingsPlaceholder />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        <Route
+          path="profile"
+          element={
+            <ProtectedCompanyRoute>
+              <WorkerProfile />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        {/* Error States */}
+        <Route
+          path="403"
+          element={
+            <ProtectedCompanyRoute>
+              <PermissionDenied />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        <Route
+          path="404"
+          element={
+            <ProtectedCompanyRoute>
+              <NotFound />
+            </ProtectedCompanyRoute>
+          }
+        />
+
+        {/* Company Shell Catch-all */}
+        <Route
+          path="*"
+          element={
+            <ProtectedCompanyRoute>
+              <NotFound />
+            </ProtectedCompanyRoute>
+          }
+        />
       </Route>
 
       {/* GLOBAL CATCH-ALL */}

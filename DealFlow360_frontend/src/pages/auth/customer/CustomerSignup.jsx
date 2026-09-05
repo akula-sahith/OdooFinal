@@ -111,6 +111,30 @@ export const CustomerSignup = () => {
     setIsLoading(true);
     try {
       await signupCustomer(formData);
+
+      // Register self-signup customer in local storage for staff directory visibility
+      try {
+        const saved = JSON.parse(localStorage.getItem('dealflow360_customers') || '[]');
+        const newCustomerRecord = {
+          id: `CUST-${Math.floor(1000 + Math.random() * 9000)}`,
+          companyName: formData.companyName,
+          contactName: formData.fullName,
+          email: formData.businessEmail,
+          phone: formData.phone,
+          taxId: 'TAX-PENDING',
+          creditLimit: 10000,
+          tier: 'Standard',
+          totalOrdersAmount: 0,
+          totalPurchasedUnits: 0,
+          source: 'Self-Registered',
+          status: 'Active',
+          createdDate: new Date().toLocaleDateString(),
+        };
+        localStorage.setItem('dealflow360_customers', JSON.stringify([newCustomerRecord, ...saved]));
+      } catch (e) {
+        // ignore
+      }
+
       setStep(4);
     } catch (err) {
       setErrorMessage(err.message || 'Failed to create account. Please try again.');

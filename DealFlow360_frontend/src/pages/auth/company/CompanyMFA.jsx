@@ -25,7 +25,7 @@ export const CompanyMFA = () => {
     try {
       const success = await verifyMFA(submittedCode);
       if (success) {
-        navigate('/m-entry-z7829a/workspace');
+        navigate('/company/dashboard');
       }
     } catch (err) {
       setErrorMessage(
