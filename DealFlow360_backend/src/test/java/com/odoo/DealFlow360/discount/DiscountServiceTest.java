@@ -85,4 +85,44 @@ class DiscountServiceTest {
         assertThat(result.getViolationPercent()).isEqualTo(new BigDecimal("2.00"));
         assertThat(result.isApprovalRequired()).isTrue();
     }
+
+    @Test
+    @DisplayName("Should delegate discount tier persistence operations to repository")
+    void testDiscountTierPersistenceDelegation() {
+        DiscountTierRepository tierRepo = org.mockito.Mockito.mock(DiscountTierRepository.class);
+        DiscountService serviceWithRepo = new DiscountService(new DiscountRiskEngine(), tierRepo, null);
+
+        DiscountTier tier = new DiscountTier(null, "Bronze", new BigDecimal("5.00"));
+        DiscountTier savedTier = new DiscountTier(1L, "Bronze", new BigDecimal("5.00"));
+
+        org.mockito.Mockito.when(tierRepo.save(tier)).thenReturn(savedTier);
+        org.mockito.Mockito.when(tierRepo.findById(1L)).thenReturn(java.util.Optional.of(savedTier));
+
+        DiscountTier result = serviceWithRepo.saveDiscountTier(tier);
+        assertThat(result.getId()).isEqualTo(1L);
+
+        java.util.Optional<DiscountTier> found = serviceWithRepo.findDiscountTierById(1L);
+        assertThat(found).isPresent();
+        assertThat(found.get().getName()).isEqualTo("Bronze");
+    }
+
+    @Test
+    @DisplayName("Should delegate category ceiling persistence operations to repository")
+    void testCategoryCeilingPersistenceDelegation() {
+        CategoryDiscountCeilingRepository ceilingRepo = org.mockito.Mockito.mock(CategoryDiscountCeilingRepository.class);
+        DiscountService serviceWithRepo = new DiscountService(new DiscountRiskEngine(), null, ceilingRepo);
+
+        CategoryDiscountCeiling ceiling = new CategoryDiscountCeiling(null, 10L, 2L, new BigDecimal("15.00"));
+        CategoryDiscountCeiling savedCeiling = new CategoryDiscountCeiling(1L, 10L, 2L, new BigDecimal("15.00"));
+
+        org.mockito.Mockito.when(ceilingRepo.save(ceiling)).thenReturn(savedCeiling);
+        org.mockito.Mockito.when(ceilingRepo.findByCategoryIdAndTierId(10L, 2L)).thenReturn(java.util.Optional.of(savedCeiling));
+
+        CategoryDiscountCeiling result = serviceWithRepo.saveCategoryDiscountCeiling(ceiling);
+        assertThat(result.getId()).isEqualTo(1L);
+
+        java.util.Optional<CategoryDiscountCeiling> found = serviceWithRepo.findCategoryDiscountCeilingByCategoryIdAndTierId(10L, 2L);
+        assertThat(found).isPresent();
+        assertThat(found.get().getMaxDiscountPercent()).isEqualTo(new BigDecimal("15.00"));
+    }
 }

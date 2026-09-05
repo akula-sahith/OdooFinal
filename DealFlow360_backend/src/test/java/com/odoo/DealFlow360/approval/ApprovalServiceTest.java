@@ -118,4 +118,33 @@ class ApprovalServiceTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("prior step 1 is not APPROVED");
     }
+
+    @Test
+    @DisplayName("7. Should delegate repository persistence for rules, steps, and approvals")
+    void testApprovalServiceRepositoryDelegation() {
+        ApprovalChainRuleRepository ruleRepo = org.mockito.Mockito.mock(ApprovalChainRuleRepository.class);
+        ApprovalChainStepRepository stepRepo = org.mockito.Mockito.mock(ApprovalChainStepRepository.class);
+        ApprovalRepository approvalRepo = org.mockito.Mockito.mock(ApprovalRepository.class);
+
+        ApprovalService serviceWithRepos = new ApprovalService(new ApprovalEngine(), ruleRepo, stepRepo, approvalRepo);
+
+        ApprovalChainRule rule = new ApprovalChainRule(null, "Test Rule", 100L, 1L, new BigDecimal("10.00"), new BigDecimal("1000.00"));
+        ApprovalChainRule savedRule = new ApprovalChainRule(1L, "Test Rule", 100L, 1L, new BigDecimal("10.00"), new BigDecimal("1000.00"));
+        org.mockito.Mockito.when(ruleRepo.save(rule)).thenReturn(savedRule);
+        org.mockito.Mockito.when(ruleRepo.findById(1L)).thenReturn(java.util.Optional.of(savedRule));
+
+        ApprovalChainRule ruleResult = serviceWithRepos.saveApprovalChainRule(rule);
+        assertThat(ruleResult.getId()).isEqualTo(1L);
+
+        ApprovalChainStep step = new ApprovalChainStep(null, 1L, 1, "Manager", 5L);
+        ApprovalChainStep savedStep = new ApprovalChainStep(10L, 1L, 1, "Manager", 5L);
+        org.mockito.Mockito.when(stepRepo.save(step)).thenReturn(savedStep);
+        org.mockito.Mockito.when(stepRepo.findByRuleId(1L)).thenReturn(List.of(savedStep));
+
+        ApprovalChainStep stepResult = serviceWithRepos.saveApprovalChainStep(step);
+        assertThat(stepResult.getId()).isEqualTo(10L);
+
+        List<ApprovalChainStep> stepsByRule = serviceWithRepos.findApprovalChainStepsByRuleId(1L);
+        assertThat(stepsByRule).hasSize(1);
+    }
 }
