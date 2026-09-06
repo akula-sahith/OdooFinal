@@ -227,6 +227,20 @@ public class CustomerService {
     }
 
     /**
+     * Finds a Customer by portal email using the repository.
+     */
+    public Optional<Customer> findCustomerByPortalEmail(String portalEmail) {
+        if (customerRepository != null && portalEmail != null && !portalEmail.isBlank()) {
+            return customerRepository.findByPortalEmail(portalEmail);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Customer> findByPortalEmail(String portalEmail) {
+        return findCustomerByPortalEmail(portalEmail);
+    }
+
+    /**
      * Finds all Customers assigned to a Sales Team using the repository.
      */
     public List<Customer> findCustomersBySalesTeamId(Long salesTeamId) {

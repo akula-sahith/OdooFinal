@@ -35,6 +35,7 @@ public class QuotationController {
     private final ProductVariantService productVariantService;
     private final PriceListService priceListService;
     private final PriceListItemService priceListItemService;
+    private final com.odoo.DealFlow360.security.SecurityUtils securityUtils;
 
     @Autowired
     public QuotationController(QuotationService quotationService,
@@ -44,7 +45,8 @@ public class QuotationController {
                                ProductService productService,
                                ProductVariantService productVariantService,
                                PriceListService priceListService,
-                               PriceListItemService priceListItemService) {
+                               PriceListItemService priceListItemService,
+                               @Autowired(required = false) com.odoo.DealFlow360.security.SecurityUtils securityUtils) {
         this.quotationService = quotationService;
         this.discountService = discountService;
         this.approvalService = approvalService;
@@ -53,6 +55,7 @@ public class QuotationController {
         this.productVariantService = productVariantService;
         this.priceListService = priceListService;
         this.priceListItemService = priceListItemService;
+        this.securityUtils = securityUtils;
     }
 
     public static class CreateQuotationRequest {
@@ -77,7 +80,16 @@ public class QuotationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Quotation>> getAllQuotations() {
+    public ResponseEntity<List<Quotation>> getAllQuotations(@RequestParam(required = false) Long customerId) {
+        if (securityUtils != null && securityUtils.isCustomer()) {
+            Long callerCustId = securityUtils.getCurrentCustomerId();
+            if (callerCustId != null) {
+                return ResponseEntity.ok(quotationService.findCustomerVisibleQuotations(callerCustId));
+            }
+        }
+        if (customerId != null) {
+            return ResponseEntity.ok(quotationService.findQuotationsByCustomerId(customerId));
+        }
         return ResponseEntity.ok(quotationService.findAllQuotations());
     }
 
@@ -85,6 +97,13 @@ public class QuotationController {
     public ResponseEntity<?> getQuotationById(@PathVariable Long id) {
         return quotationService.findQuotationById(id)
                 .map(quotation -> {
+                    if (securityUtils != null && securityUtils.isCustomer()) {
+                        Long callerCustId = securityUtils.getCurrentCustomerId();
+                        if (callerCustId == null || !callerCustId.equals(quotation.getCustomerId())) {
+                            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                    .body((Object) Map.of("message", "Access denied: You are not authorized to view this quotation."));
+                        }
+                    }
                     List<QuotationLine> lines = quotationService.findLinesByQuotationId(id);
                     Map<String, Object> response = new HashMap<>();
                     response.put("quotation", quotation);

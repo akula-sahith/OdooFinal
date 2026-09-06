@@ -109,6 +109,24 @@ public class QuotationRepository {
     }
 
     /**
+     * Finds all Quotations belonging to a Customer ID with status matching one of the allowed statuses.
+     */
+    public List<Quotation> findByCustomerIdAndStatuses(Long customerId, List<String> statuses) {
+        if (statuses == null || statuses.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        String inSql = String.join(",", java.util.Collections.nCopies(statuses.size(), "?"));
+        String sql = "SELECT id, customer_id, price_list_id, status, currency, subtotal_amount, tax_amount, total_amount, valid_until, created_at, updated_at " +
+                     "FROM quotations WHERE customer_id = ? AND status IN (" + inSql + ") ORDER BY id";
+        Object[] params = new Object[statuses.size() + 1];
+        params[0] = customerId;
+        for (int i = 0; i < statuses.size(); i++) {
+            params[i + 1] = statuses.get(i);
+        }
+        return jdbcTemplate.query(sql, rowMapper, params);
+    }
+
+    /**
      * Finds all Quotations matching a specific status string.
      */
     public List<Quotation> findByStatus(String status) {

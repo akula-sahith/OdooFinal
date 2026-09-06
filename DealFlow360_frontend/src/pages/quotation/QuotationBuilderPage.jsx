@@ -3,7 +3,10 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { quotationApi } from '../../api/quotationApi';
 import { productApi } from '../../api/productApi';
 import { customerApi } from '../../api/customerApi';
+import { approvalApi } from '../../api/approvalApi';
+import { useAuth } from '../../context/AuthContext';
 import { Layout } from '../../components/common/Layout';
+import { DiscountTierBadge } from '../../components/common/DiscountTierBadge';
 import {
   FileText,
   Plus,
@@ -38,9 +41,11 @@ export const QuotationBuilderPage = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
+  const [feedback, setFeedback] = useState(null);
 
   // Customer negotiation request state
   const [activeNegotiation, setActiveNegotiation] = useState(null);
+  const [negotiationHistory, setNegotiationHistory] = useState([]);
   const [repResponseNote, setRepResponseNote] = useState('');
   const [showRepResponseModal, setShowRepResponseModal] = useState(false);
 
@@ -61,6 +66,8 @@ export const QuotationBuilderPage = () => {
   // Approval submit modal / result state
   const [approvalResult, setApprovalResult] = useState(null);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
+
+  const { user } = useAuth();
 
   const loadQuotationDetails = async () => {
     setLoading(true);
@@ -99,10 +106,12 @@ export const QuotationBuilderPage = () => {
       try {
         const reqs = await customerApi.getCustomerRequests();
         const list = Array.isArray(reqs) ? reqs : [];
-        const matched = list.find(
-          (r) => String(r.quotationId) === String(id) && (r.status === 'SUBMITTED' || r.status === 'PENDING' || r.status === 'OPEN' || r.status === 'UNDER_NEGOTIATION')
+        const matchedList = list.filter((r) => String(r.quotationId) === String(id));
+        const matched = matchedList.find(
+          (r) => r.status === 'SUBMITTED' || r.status === 'PENDING' || r.status === 'OPEN' || r.status === 'UNDER_NEGOTIATION'
         );
-        setActiveNegotiation(matched || null);
+        setActiveNegotiation(matched || matchedList[0] || null);
+        setNegotiationHistory(matchedList);
       } catch (reqErr) {
         console.warn('Customer requests fetch error', reqErr);
       }
@@ -343,20 +352,61 @@ export const QuotationBuilderPage = () => {
     }
   };
 
+  const isManagerOrAdmin = user?.role === 'SALES_MANAGER' || user?.role === 'ADMIN' || user?.role === 'FINANCE' || user?.email?.includes('mgr') || user?.email?.includes('admin');
+
+  const handleManagerApproveQuotation = async () => {
+    setActionLoading(true);
+    setFeedback(null);
+    try {
+      const apps = await approvalApi.getAllApprovals().catch(() => []);
+      const pendingApp = Array.isArray(apps) ? apps.find(a => String(a.quotationId) === String(id) && a.status === 'PENDING') : null;
+      if (pendingApp) {
+        await approvalApi.approveRecord(pendingApp.id, user?.id || 1, 'Approved directly by Manager on Quotation Page');
+      } else {
+        await quotationApi.updateQuotation(id, { status: 'APPROVED' });
+      }
+      await loadQuotationDetails();
+      setFeedback({ type: 'success', message: `Quotation #${id} approved successfully by Manager!` });
+    } catch (err) {
+      setFeedback({ type: 'error', message: err.message || 'Failed to approve quotation.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleManagerRejectQuotation = async () => {
+    setActionLoading(true);
+    setFeedback(null);
+    try {
+      const apps = await approvalApi.getAllApprovals().catch(() => []);
+      const pendingApp = Array.isArray(apps) ? apps.find(a => String(a.quotationId) === String(id) && a.status === 'PENDING') : null;
+      if (pendingApp) {
+        await approvalApi.rejectRecord(pendingApp.id, user?.id || 1, 'Rejected by Manager on Quotation Page');
+      } else {
+        await quotationApi.updateQuotation(id, { status: 'REJECTED' });
+      }
+      await loadQuotationDetails();
+      setFeedback({ type: 'error', message: `Quotation #${id} rejected by Manager.` });
+    } catch (err) {
+      setFeedback({ type: 'error', message: err.message || 'Failed to reject quotation.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleSendToCustomer = async () => {
     if (quotation?.status === 'PENDING_APPROVAL') {
-      alert(`Quotation #${id} is currently awaiting manager approval and cannot be sent to customer until approved.`);
+      setFeedback({ type: 'error', message: `Quotation #${id} is currently awaiting manager approval and cannot be sent to customer until approved.` });
       return;
     }
     setActionLoading(true);
+    setFeedback(null);
     try {
       await quotationApi.sendToCustomer(id);
       await loadQuotationDetails();
-      if (window.confirm('Quotation published to Customer Portal successfully! Open Customer Portal View now?')) {
-        navigate(`/portal/quotations/${id}`);
-      }
+      setFeedback({ type: 'success', message: `Quotation #${id} sent to customer successfully! Status updated to SENT.` });
     } catch (err) {
-      alert(err.message || 'Send to customer failed.');
+      setFeedback({ type: 'error', message: err.message || 'Send to customer failed.' });
     } finally {
       setActionLoading(false);
     }
@@ -410,21 +460,33 @@ export const QuotationBuilderPage = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
-            {(quotation?.status === 'SENT' || quotation?.status === 'UNDER_NEGOTIATION' || quotation?.status === 'CONFIRMED') && (
-              <Link
-                to={`/portal/quotations/${id}`}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 font-semibold text-xs rounded-xl transition-all"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                View in Customer Portal
-              </Link>
-            )}
 
             {quotation?.status === 'PENDING_APPROVAL' ? (
-              <div className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-xs font-mono font-bold animate-pulse shadow-xs">
-                <ShieldAlert className="w-4 h-4 text-amber-600" />
-                Awaiting Manager Approval
-              </div>
+              isManagerOrAdmin ? (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleManagerApproveQuotation}
+                    disabled={actionLoading}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all disabled:opacity-40"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Approve Quotation
+                  </button>
+                  <button
+                    onClick={handleManagerRejectQuotation}
+                    disabled={actionLoading}
+                    className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all disabled:opacity-40"
+                  >
+                    <X className="w-4 h-4" />
+                    Reject
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-xs font-mono font-bold animate-pulse shadow-xs">
+                  <ShieldAlert className="w-4 h-4 text-amber-600" />
+                  Awaiting Manager Approval
+                </div>
+              )
             ) : quotation?.status === 'APPROVED' || quotation?.status === 'CONFIRMED' ? (
               <div className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-mono font-bold">
                 <CheckCircle className="w-4 h-4 text-emerald-600" />
@@ -451,6 +513,21 @@ export const QuotationBuilderPage = () => {
             </button>
           </div>
         </div>
+
+        {/* Feedback Alert Banner */}
+        {feedback && (
+          <div className={`p-4 rounded-2xl flex items-center justify-between text-xs font-semibold shadow-xs ${
+            feedback.type === 'error' ? 'bg-rose-50 border border-rose-200 text-rose-800' : 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+          }`}>
+            <div className="flex items-center gap-2">
+              {feedback.type === 'error' ? <ShieldAlert className="w-4 h-4 text-rose-600 flex-shrink-0" /> : <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />}
+              <span>{feedback.message}</span>
+            </div>
+            <button onClick={() => setFeedback(null)} className="p-1 hover:bg-black/5 rounded-lg transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* Manager Approval Pending Alert Banner */}
         {quotation?.status === 'PENDING_APPROVAL' && (
@@ -800,6 +877,104 @@ export const QuotationBuilderPage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Previous Counter Proposals & Negotiation Log below quotation */}
+              {(negotiationHistory.length > 0 || activeNegotiation || quotation?.status === 'UNDER_NEGOTIATION' || quotation?.counterDiscountPercent) && (
+                <div className="bg-purple-50/70 border border-purple-200 p-5 rounded-2xl space-y-4 shadow-xs">
+                  <div className="flex items-center justify-between border-b border-purple-200 pb-3">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5 text-purple-700" />
+                      <h3 className="text-sm font-bold text-purple-950 uppercase tracking-wider">
+                        Previous Counter Proposals &amp; Negotiation Data
+                      </h3>
+                    </div>
+                    <span className="text-xs font-mono font-bold text-purple-800 bg-purple-100 px-2.5 py-1 rounded-lg border border-purple-200">
+                      {negotiationHistory.length > 0 ? negotiationHistory.length : 1} Counter Proposal{(negotiationHistory.length > 1) ? 's' : ''}
+                    </span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {(negotiationHistory.length > 0 ? negotiationHistory : [activeNegotiation || {
+                      id: 'REQ-1',
+                      counterDiscountPercent: quotation?.counterDiscountPercent || 10,
+                      description: quotation?.notes || 'Customer counter proposal',
+                      status: quotation?.status === 'UNDER_NEGOTIATION' ? 'SUBMITTED' : 'RESOLVED',
+                      createdAt: quotation?.updatedAt
+                    }]).map((req, idx) => {
+                      const desc = req?.description || '';
+                      const matchDisc = desc.match(/(\d+(\.\d+)?)%/);
+                      const discPercent = req?.counterDiscountPercent != null
+                        ? req.counterDiscountPercent
+                        : (matchDisc ? parseFloat(matchDisc[1]) : (quotation?.counterDiscountPercent || null));
+                      const statusStr = (req?.status || 'SUBMITTED').toUpperCase();
+                      const isPending = statusStr === 'SUBMITTED' || statusStr === 'PENDING' || statusStr === 'OPEN' || statusStr === 'UNDER_NEGOTIATION';
+
+                      let counterSub = null;
+                      let counterTotal = null;
+                      let savings = null;
+                      if (discPercent != null) {
+                        counterSub = financials.listSubtotal * (1 - discPercent / 100);
+                        counterTotal = counterSub + financials.taxAmount;
+                        savings = Math.max(0, financials.listSubtotal - counterSub);
+                      }
+
+                      return (
+                        <div key={req?.id || idx} className="bg-white border border-purple-200 p-4 rounded-xl space-y-3 shadow-xs">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-mono font-bold text-slate-900">
+                                Counter Proposal #{req?.id || `REQ-${idx + 1}`}
+                              </span>
+                              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border uppercase ${
+                                isPending
+                                  ? 'bg-purple-100 text-purple-800 border-purple-300'
+                                  : statusStr === 'RESOLVED' || statusStr === 'ACCEPTED'
+                                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                  : 'bg-slate-100 text-slate-700 border-slate-300'
+                              }`}>
+                                {isPending ? 'AWAITING REVIEW' : statusStr}
+                              </span>
+                            </div>
+                            {req?.createdAt && (
+                              <span className="text-[11px] font-mono text-slate-400">
+                                {new Date(req.createdAt).toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <div className="p-2.5 bg-purple-50/50 rounded-lg border border-purple-100">
+                              <span className="text-[10px] font-mono text-purple-700 uppercase font-semibold block">Customer Counter Discount:</span>
+                              <span className="text-amber-600 font-extrabold text-base font-mono">
+                                {discPercent != null ? `${discPercent}% OFF` : 'Custom Terms'}
+                              </span>
+                            </div>
+
+                            <div className="p-2.5 bg-purple-50/50 rounded-lg border border-purple-100">
+                              <span className="text-[10px] font-mono text-purple-700 uppercase font-semibold block">Counter Financial Impact:</span>
+                              {counterTotal != null ? (
+                                <div>
+                                  <span className="text-emerald-700 font-bold font-mono text-sm">${counterTotal.toFixed(2)}</span>
+                                  <span className="text-[10px] text-slate-500 block font-sans">Savings: ${savings.toFixed(2)}</span>
+                                </div>
+                              ) : (
+                                <span className="text-slate-500 italic font-sans">Pending application</span>
+                              )}
+                            </div>
+
+                            <div className="p-2.5 bg-purple-50/50 rounded-lg border border-purple-100">
+                              <span className="text-[10px] font-mono text-purple-700 uppercase font-semibold block">Customer Request Notes:</span>
+                              <p className="text-slate-700 text-xs italic font-sans line-clamp-2">
+                                "{req?.lineComments || req?.description || 'Customer submitted counter proposal terms.'}"
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Side Recommendation Panel */}

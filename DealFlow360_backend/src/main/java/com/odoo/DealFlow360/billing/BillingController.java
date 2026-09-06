@@ -24,11 +24,15 @@ public class BillingController {
 
     private final BillingService billingService;
     private final FulfillmentService fulfillmentService;
+    private final com.odoo.DealFlow360.security.SecurityUtils securityUtils;
 
     @Autowired
-    public BillingController(BillingService billingService, FulfillmentService fulfillmentService) {
+    public BillingController(BillingService billingService,
+                             FulfillmentService fulfillmentService,
+                             @Autowired(required = false) com.odoo.DealFlow360.security.SecurityUtils securityUtils) {
         this.billingService = billingService;
         this.fulfillmentService = fulfillmentService;
+        this.securityUtils = securityUtils;
     }
 
     public static class RecordPaymentRequest {
@@ -86,11 +90,30 @@ public class BillingController {
 
     @GetMapping("/invoices")
     public ResponseEntity<List<Invoice>> getAllInvoices() {
+        if (securityUtils != null && securityUtils.isCustomer()) {
+            Long callerCustId = securityUtils.getCurrentCustomerId();
+            if (callerCustId != null) {
+                return ResponseEntity.ok(billingService.findInvoicesByCustomerId(callerCustId));
+            }
+        }
         return ResponseEntity.ok(billingService.findAllInvoices());
     }
 
     @GetMapping("/payments")
     public ResponseEntity<List<Payment>> getAllPayments() {
+        if (securityUtils != null && securityUtils.isCustomer()) {
+            Long callerCustId = securityUtils.getCurrentCustomerId();
+            if (callerCustId != null) {
+                List<Invoice> custInvoices = billingService.findInvoicesByCustomerId(callerCustId);
+                List<Payment> custPayments = new java.util.ArrayList<>();
+                for (Invoice inv : custInvoices) {
+                    if (inv != null && inv.getId() != null) {
+                        custPayments.addAll(billingService.findPaymentsByInvoiceId(inv.getId()));
+                    }
+                }
+                return ResponseEntity.ok(custPayments);
+            }
+        }
         return ResponseEntity.ok(billingService.findAllPayments());
     }
 
@@ -98,6 +121,13 @@ public class BillingController {
     public ResponseEntity<?> getInvoiceById(@PathVariable Long id) {
         return billingService.findInvoiceById(id)
                 .map(invoice -> {
+                    if (securityUtils != null && securityUtils.isCustomer()) {
+                        Long callerCustId = securityUtils.getCurrentCustomerId();
+                        if (callerCustId == null || !callerCustId.equals(invoice.getCustomerId())) {
+                            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                    .body((Object) Map.of("message", "Access denied: You are not authorized to view this invoice."));
+                        }
+                    }
                     List<Payment> payments = billingService.findPaymentsByInvoiceId(id);
                     List<CreditNote> creditNotes = billingService.findCreditNotesByInvoiceId(id);
 

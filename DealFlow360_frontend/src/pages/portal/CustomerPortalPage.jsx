@@ -3,7 +3,10 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { portalApi } from '../../api/portalApi';
 import { quotationApi } from '../../api/quotationApi';
 import { productApi } from '../../api/productApi';
+import { customerApi } from '../../api/customerApi';
+import { useAuth } from '../../context/AuthContext';
 import { Navbar } from '../../components/common/Navbar';
+import { DiscountTierBadge } from '../../components/common/DiscountTierBadge';
 import {
   MessageSquare,
   CheckCircle,
@@ -48,29 +51,47 @@ export const CustomerPortalPage = () => {
   const [paymentMethod, setPaymentMethod] = useState('CREDIT_CARD');
   const [paymentSuccessResult, setPaymentSuccessResult] = useState(null);
 
+  const { user } = useAuth();
+  const [currentCustomer, setCurrentCustomer] = useState(null);
+  const [pendingNegotiation, setPendingNegotiation] = useState(null);
+  const [negotiationHistory, setNegotiationHistory] = useState([]);
+  const [confirmedOrder, setConfirmedOrder] = useState(null);
+  const [feedback, setFeedback] = useState(null);
+
   const loadPortalView = async (qId) => {
     setLoading(true);
     setNotFound(false);
     setError('');
     try {
-      const [allQuotesRes, prodRes] = await Promise.all([
-        quotationApi.getAllQuotations().catch(() => []),
+      const [portalQuotesRes, prodRes, allCustsRes, custReqsRes] = await Promise.all([
+        portalApi.getPortalQuotations().catch(() => []),
         productApi.getAllProducts().catch(() => []),
+        customerApi.getAllCustomers().catch(() => []),
+        customerApi.getCustomerRequests().catch(() => []),
       ]);
 
-      const quotesList = Array.isArray(allQuotesRes) ? allQuotesRes : [];
+      const quotesList = Array.isArray(portalQuotesRes) ? portalQuotesRes : [];
+      const allCusts = Array.isArray(allCustsRes) ? allCustsRes : [];
+      const allReqs = Array.isArray(custReqsRes) ? custReqsRes : [];
       setProducts(Array.isArray(prodRes) ? prodRes : []);
+
+      // Find customer record matching current user
+      let matchedCustomer = null;
+      if (user?.email) {
+        const emailLower = user.email.toLowerCase();
+        matchedCustomer = allCusts.find(c => c.portalEmail && c.portalEmail.toLowerCase() === emailLower);
+      }
+      if (!matchedCustomer && user?.id) {
+        matchedCustomer = allCusts.find(c => String(c.id || c.dbId) === String(user.id));
+      }
+      setCurrentCustomer(matchedCustomer);
+
       setAvailableQuotes(quotesList);
 
       // Determine target quote ID
       let targetQuoteId = qId;
       if (!targetQuoteId) {
-        const sentQuotes = quotesList.filter(
-          (q) => q.status === 'SENT' || q.status === 'UNDER_NEGOTIATION' || q.status === 'CONFIRMED'
-        );
-        if (sentQuotes.length > 0) {
-          targetQuoteId = String(sentQuotes[sentQuotes.length - 1].id);
-        } else if (quotesList.length > 0) {
+        if (quotesList.length > 0) {
           targetQuoteId = String(quotesList[quotesList.length - 1].id);
         }
       }
@@ -81,10 +102,29 @@ export const CustomerPortalPage = () => {
         if (pRes && pRes.quotation) {
           setQuotation(pRes.quotation);
           setLines(pRes.lines || []);
+          setConfirmedOrder(pRes.order || null);
+
+          // Find negotiation requests for this quotation
+          const matchedReqs = allReqs.filter(r => String(r.quotationId) === String(targetQuoteId));
+          const matchedReq = matchedReqs.find(
+            r => r.status === 'SUBMITTED' || r.status === 'PENDING' || r.status === 'OPEN' || r.status === 'UNDER_NEGOTIATION'
+          );
+          setPendingNegotiation(matchedReq || matchedReqs[0] || null);
+          setNegotiationHistory(matchedReqs);
         } else {
+          setQuotation(null);
+          setLines([]);
+          setConfirmedOrder(null);
+          setPendingNegotiation(null);
+          setNegotiationHistory([]);
           setNotFound(true);
         }
       } else {
+        setQuotation(null);
+        setLines([]);
+        setConfirmedOrder(null);
+        setPendingNegotiation(null);
+        setNegotiationHistory([]);
         setNotFound(true);
       }
     } catch (err) {
@@ -107,14 +147,15 @@ export const CustomerPortalPage = () => {
   const handleSubmitNegotiation = async (e) => {
     e.preventDefault();
     if (!counterDiscountPercent && !lineComments) {
-      alert('Please enter a counter discount % or line comment.');
+      setFeedback({ type: 'error', message: 'Please enter a counter discount % or line comment.' });
       return;
     }
 
     setSubmitting(true);
+    setFeedback(null);
     try {
       await portalApi.submitNegotiation({
-        customerId: quotation?.customerId || 1,
+        customerId: quotation?.customerId || currentCustomer?.id || 1,
         quotationId: Number(activeQuoteId),
         requestType: 'COUNTER_DISCOUNT',
         description: lineComments || 'Customer counter offer request',
@@ -122,12 +163,12 @@ export const CustomerPortalPage = () => {
         lineComments: lineComments,
       });
 
-      alert('Counter offer submitted! Quotation status updated to UNDER_NEGOTIATION and re-routed for manager approval.');
+      setFeedback({ type: 'success', message: 'Counter offer submitted! Quotation status updated to UNDER_NEGOTIATION.' });
       setCounterDiscountPercent('');
       setLineComments('');
       await loadPortalView(activeQuoteId);
     } catch (err) {
-      alert(err.message || 'Negotiation submission failed.');
+      setFeedback({ type: 'error', message: err.message || 'Negotiation submission failed.' });
     } finally {
       setSubmitting(false);
     }
@@ -135,17 +176,32 @@ export const CustomerPortalPage = () => {
 
   const handleDirectConfirmQuotation = async () => {
     if (quotation?.status === 'CONFIRMED') {
-      alert('This quotation has already been confirmed!');
+      setFeedback({ type: 'error', message: 'This quotation has already been confirmed!' });
       return;
     }
     setConfirming(true);
+    setFeedback(null);
     try {
       const res = await portalApi.confirmQuotation(activeQuoteId);
-      alert('Quotation confirmed! Order created, warehouse fulfillment split calculated, and invoice issued.');
-      const orderId = res?.order?.id || activeQuoteId;
-      navigate(`/orders/${orderId}`);
+      if (res?.status === 'PENDING_APPROVAL') {
+        setFeedback({
+          type: 'error',
+          message: res.message || 'Negotiated terms exceed discount approval thresholds and require manager approval before an order can be created.'
+        });
+        await loadPortalView(activeQuoteId);
+        return;
+      }
+
+      const createdOrder = res?.order;
+      if (createdOrder?.id) {
+        setConfirmedOrder(createdOrder);
+        navigate(`/orders/${createdOrder.id}`);
+      } else {
+        await loadPortalView(activeQuoteId);
+        setFeedback({ type: 'success', message: 'Quotation confirmed successfully!' });
+      }
     } catch (err) {
-      alert(err.message || 'Quotation confirmation failed.');
+      setFeedback({ type: 'error', message: err.message || 'Quotation confirmation failed.' });
     } finally {
       setConfirming(false);
     }
@@ -153,7 +209,7 @@ export const CustomerPortalPage = () => {
 
   const handleOpenPaymentModal = () => {
     if (quotation?.status === 'CONFIRMED') {
-      alert('This order has already been confirmed!');
+      setFeedback({ type: 'error', message: 'This order has already been confirmed!' });
       return;
     }
     setShowPaymentModal(true);
@@ -162,18 +218,31 @@ export const CustomerPortalPage = () => {
   const handleProcessPayment = async (e) => {
     if (e) e.preventDefault();
     if (!securityPin || securityPin.length < 4) {
-      alert('Please enter a valid 4-digit security PIN (e.g. 1234).');
+      setFeedback({ type: 'error', message: 'Please enter a valid 4-digit security PIN (e.g. 1234).' });
       return;
     }
 
     setConfirming(true);
+    setFeedback(null);
     try {
       const res = await portalApi.confirmQuotation(activeQuoteId, securityPin, paymentMethod);
+      if (res?.status === 'PENDING_APPROVAL') {
+        setShowPaymentModal(false);
+        setFeedback({
+          type: 'error',
+          message: res.message || 'Negotiated terms exceed discount approval thresholds and require manager approval before an order can be created.'
+        });
+        await loadPortalView(activeQuoteId);
+        return;
+      }
       setShowPaymentModal(false);
       setPaymentSuccessResult(res);
+      if (res?.order) {
+        setConfirmedOrder(res.order);
+      }
       await loadPortalView(activeQuoteId);
     } catch (err) {
-      alert(err.message || 'Payment processing & order confirmation failed.');
+      setFeedback({ type: 'error', message: err.message || 'Payment processing & order confirmation failed.' });
     } finally {
       setConfirming(false);
     }
@@ -216,7 +285,7 @@ export const CustomerPortalPage = () => {
         {/* Top Bar with Quote Selector */}
         <div className="bg-white border border-blue-100 p-6 rounded-2xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-mono text-sky-600 font-bold">CUSTOMER PORTAL VIEW</span>
               <span
                 className={`text-xs px-2.5 py-0.5 rounded-full font-semibold border ${
@@ -231,6 +300,7 @@ export const CustomerPortalPage = () => {
               >
                 {quotation?.status || 'SENT'}
               </span>
+              {quotation && <DiscountTierBadge customer={currentCustomer} size="xs" />}
             </div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight mt-1">
               B2B Quotation #{activeQuoteId || '...'} Negotiation Portal
@@ -260,12 +330,30 @@ export const CustomerPortalPage = () => {
 
             {quotation?.status === 'CONFIRMED' ? (
               <button
-                onClick={() => navigate(`/orders/${activeQuoteId}`)}
+                onClick={() => {
+                  const targetOrderId = confirmedOrder?.id || quotation?.orderId || activeQuoteId;
+                  navigate(`/orders/${targetOrderId}`);
+                }}
                 className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all hover:scale-105"
               >
                 <CheckCircle className="w-4 h-4" />
                 View Created Sales Order Details &amp; Flow →
               </button>
+            ) : quotation?.status === 'PENDING_APPROVAL' ? (
+              <div className="px-4 py-2.5 bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold text-xs rounded-xl flex items-center gap-2">
+                <Clock className="w-4 h-4 text-amber-600 animate-pulse" />
+                Quotation Requires Manager Approval Before Confirmation
+              </div>
+            ) : quotation?.status === 'UNDER_NEGOTIATION' ? (
+              <div className="px-4 py-2.5 bg-purple-50 text-purple-800 border border-purple-200 font-mono font-bold text-xs rounded-xl flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-purple-600" />
+                Under Counter-Offer Negotiation — Awaiting Sales Rep Response
+              </div>
+            ) : (quotation?.status === 'DRAFT' || quotation?.status === 'RETURNED_FOR_REVISION') ? (
+              <div className="px-4 py-2.5 bg-slate-100 text-slate-600 border border-slate-200 font-mono font-bold text-xs rounded-xl flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-slate-400" />
+                Quotation is Not Ready for Confirmation ({quotation?.status})
+              </div>
             ) : (
               <div className="flex items-center gap-2">
                 <button
@@ -289,6 +377,15 @@ export const CustomerPortalPage = () => {
             )}
           </div>
         </div>
+
+        {feedback && (
+          <div className={`p-4 rounded-xl text-xs font-semibold flex items-center justify-between border ${
+            feedback.type === 'error' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+          }`}>
+            <span>{feedback.message}</span>
+            <button onClick={() => setFeedback(null)} className="text-slate-400 hover:text-slate-700 font-bold text-sm ml-2">&times;</button>
+          </div>
+        )}
 
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center space-y-3">
@@ -408,6 +505,104 @@ export const CustomerPortalPage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Previous Counter Proposals & Negotiation Log below quotation */}
+              {(negotiationHistory.length > 0 || pendingNegotiation || quotation?.status === 'UNDER_NEGOTIATION' || quotation?.counterDiscountPercent) && (
+                <div className="bg-purple-50/70 border border-purple-200 p-5 rounded-2xl space-y-4 shadow-xs">
+                  <div className="flex items-center justify-between border-b border-purple-200 pb-3">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5 text-purple-700" />
+                      <h3 className="text-sm font-bold text-purple-950 uppercase tracking-wider">
+                        Previous Counter Proposals &amp; Negotiation Log
+                      </h3>
+                    </div>
+                    <span className="text-xs font-mono font-bold text-purple-800 bg-purple-100 px-2.5 py-1 rounded-lg border border-purple-200">
+                      {negotiationHistory.length > 0 ? negotiationHistory.length : 1} Counter Request{(negotiationHistory.length > 1) ? 's' : ''}
+                    </span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {(negotiationHistory.length > 0 ? negotiationHistory : [pendingNegotiation || {
+                      id: 'REQ-1',
+                      counterDiscountPercent: quotation?.counterDiscountPercent || 10,
+                      description: quotation?.notes || 'Submitted counter proposal request',
+                      status: quotation?.status === 'UNDER_NEGOTIATION' ? 'SUBMITTED' : 'RESOLVED',
+                      createdAt: quotation?.updatedAt
+                    }]).map((req, idx) => {
+                      const desc = req?.description || '';
+                      const matchDisc = desc.match(/(\d+(\.\d+)?)%/);
+                      const discPercent = req?.counterDiscountPercent != null
+                        ? req.counterDiscountPercent
+                        : (matchDisc ? parseFloat(matchDisc[1]) : (quotation?.counterDiscountPercent || null));
+                      const statusStr = (req?.status || 'SUBMITTED').toUpperCase();
+                      const isPending = statusStr === 'SUBMITTED' || statusStr === 'PENDING' || statusStr === 'OPEN' || statusStr === 'UNDER_NEGOTIATION';
+
+                      let counterSub = null;
+                      let counterTotal = null;
+                      let savings = null;
+                      if (discPercent != null) {
+                        counterSub = financials.listSubtotal * (1 - discPercent / 100);
+                        counterTotal = counterSub + financials.taxAmount;
+                        savings = Math.max(0, financials.listSubtotal - counterSub);
+                      }
+
+                      return (
+                        <div key={req?.id || idx} className="bg-white border border-purple-200 p-4 rounded-xl space-y-3 shadow-xs">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-mono font-bold text-slate-900">
+                                Counter Request #{req?.id || `REQ-${idx + 1}`}
+                              </span>
+                              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border uppercase ${
+                                isPending
+                                  ? 'bg-purple-100 text-purple-800 border-purple-300 animate-pulse'
+                                  : statusStr === 'RESOLVED' || statusStr === 'ACCEPTED'
+                                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                  : 'bg-slate-100 text-slate-700 border-slate-300'
+                              }`}>
+                                {isPending ? 'AWAITING REVIEW' : statusStr}
+                              </span>
+                            </div>
+                            {req?.createdAt && (
+                              <span className="text-[11px] font-mono text-slate-400">
+                                {new Date(req.createdAt).toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <div className="p-2.5 bg-purple-50/50 rounded-lg border border-purple-100">
+                              <span className="text-[10px] font-mono text-purple-700 uppercase font-semibold block">Proposed Counter Discount:</span>
+                              <span className="text-purple-950 font-bold text-sm font-mono">
+                                {discPercent != null ? `${discPercent}% OFF` : 'Custom Terms Requested'}
+                              </span>
+                            </div>
+
+                            <div className="p-2.5 bg-purple-50/50 rounded-lg border border-purple-100">
+                              <span className="text-[10px] font-mono text-purple-700 uppercase font-semibold block">Counter Payable Impact:</span>
+                              {counterTotal != null ? (
+                                <div>
+                                  <span className="text-emerald-700 font-bold font-mono text-sm">${counterTotal.toFixed(2)}</span>
+                                  <span className="text-[10px] text-slate-500 block font-sans">Est. Savings: ${savings.toFixed(2)}</span>
+                                </div>
+                              ) : (
+                                <span className="text-slate-500 italic font-sans">N/A</span>
+                              )}
+                            </div>
+
+                            <div className="p-2.5 bg-purple-50/50 rounded-lg border border-purple-100">
+                              <span className="text-[10px] font-mono text-purple-700 uppercase font-semibold block">Proposal Note:</span>
+                              <p className="text-slate-700 text-xs italic font-sans line-clamp-2">
+                                "{req?.lineComments || req?.description || 'Customer counter offer request'}"
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Negotiation Tool Side Form */}
@@ -657,4 +852,3 @@ export const CustomerPortalPage = () => {
     </div>
   );
 };
-

@@ -19,10 +19,13 @@ import java.util.Map;
 public class CustomerRequestController {
 
     private final JdbcTemplate jdbcTemplate;
+    private final com.odoo.DealFlow360.security.SecurityUtils securityUtils;
 
     @Autowired
-    public CustomerRequestController(JdbcTemplate jdbcTemplate) {
+    public CustomerRequestController(JdbcTemplate jdbcTemplate,
+                                   @Autowired(required = false) com.odoo.DealFlow360.security.SecurityUtils securityUtils) {
         this.jdbcTemplate = jdbcTemplate;
+        this.securityUtils = securityUtils;
     }
 
     @GetMapping
@@ -30,6 +33,7 @@ public class CustomerRequestController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String priority,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long customerId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "100") int limit) {
 
@@ -39,6 +43,15 @@ public class CustomerRequestController {
                 "  UNION ALL " +
                 "  SELECT nr.id, nr.customer_id, nr.quotation_id, nr.request_type, nr.description, nr.status, nr.counter_discount_percent, nr.line_comments, nr.proposed_unit_price, nr.created_at, nr.updated_at, c.company_name AS customer_name, c.portal_email AS customer_email FROM negotiation_requests nr LEFT JOIN customers c ON nr.customer_id = c.id " +
                 ") reqs WHERE 1=1 ");
+
+        if (securityUtils != null && securityUtils.isCustomer()) {
+            Long callerCustId = securityUtils.getCurrentCustomerId();
+            if (callerCustId != null) {
+                sql.append("AND customer_id = ").append(callerCustId).append(" ");
+            }
+        } else if (customerId != null) {
+            sql.append("AND customer_id = ").append(customerId).append(" ");
+        }
 
         if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status)) {
             sql.append("AND UPPER(status) = '").append(status.trim().toUpperCase().replace("'", "''")).append("' ");

@@ -96,6 +96,18 @@ public class CustomerRepository {
     }
 
     /**
+     * Finds a Customer by portal email (case-insensitive).
+     */
+    public Optional<Customer> findByPortalEmail(String portalEmail) {
+        if (portalEmail == null || portalEmail.isBlank()) {
+            return Optional.empty();
+        }
+        String sql = "SELECT id, company_name, sales_team_id, discount_tier_id, portal_email, portal_password_hash, created_at FROM customers WHERE LOWER(portal_email) = LOWER(?)";
+        List<Customer> results = jdbcTemplate.query(sql, rowMapper, portalEmail.trim());
+        return results.stream().findFirst();
+    }
+
+    /**
      * Checks if a Customer exists by ID.
      */
     public boolean existsById(Long id) {

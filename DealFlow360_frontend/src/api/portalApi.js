@@ -1,6 +1,10 @@
 import { apiFetch } from './client';
 
 export const portalApi = {
+  getPortalQuotations: async () => {
+    return await apiFetch('/api/portal/quotations');
+  },
+
   getPortalQuotationView: async (id) => {
     return await apiFetch(`/api/portal/quotations/${id}`);
   },

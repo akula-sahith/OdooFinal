@@ -228,6 +228,13 @@ public class FulfillmentService {
         return Optional.empty();
     }
 
+    public List<Order> findOrdersByCustomerId(Long customerId) {
+        if (orderRepository != null && customerId != null) {
+            return orderRepository.findByCustomerId(customerId);
+        }
+        return Collections.emptyList();
+    }
+
     public List<Order> findAllOrders() {
         if (orderRepository != null) {
             return orderRepository.findAll();

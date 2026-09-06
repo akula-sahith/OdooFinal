@@ -405,6 +405,16 @@ public class QuotationService {
         return quotationRepository.findByCustomerId(customerId);
     }
 
+    public List<Quotation> findCustomerVisibleQuotations(Long customerId) {
+        if (quotationRepository == null) {
+            return java.util.Collections.emptyList();
+        }
+        if (customerId == null) {
+            return java.util.Collections.emptyList();
+        }
+        return quotationRepository.findByCustomerIdAndStatuses(customerId, List.of("SENT", "UNDER_NEGOTIATION", "CONFIRMED"));
+    }
+
     public List<Quotation> findQuotationsByStatus(String status) {
         if (quotationRepository == null) {
             throw new IllegalStateException("QuotationRepository is not initialized");

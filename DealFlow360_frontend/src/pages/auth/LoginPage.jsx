@@ -4,8 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { Lock, Mail, ArrowRight, Shield, Sparkles, UserCheck, AlertCircle } from 'lucide-react';
 
 export const LoginPage = () => {
-  const [email, setEmail] = useState('alex.rep@dealflow360.com');
-  const [password, setPassword] = useState('SalesRepPass123!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -32,11 +32,6 @@ export const LoginPage = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleQuickLogin = (demoEmail, demoPassword) => {
-    setEmail(demoEmail);
-    setPassword(demoPassword);
   };
 
   return (
@@ -78,7 +73,7 @@ export const LoginPage = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="alex.rep@dealflow360.com"
+                  placeholder="name@dealflow360.com"
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-600 focus:bg-white text-xs font-mono transition-all"
                 />
               </div>
@@ -119,56 +114,7 @@ export const LoginPage = () => {
             </button>
           </form>
 
-          {/* Preset Demo Role Selectors */}
-          <div className="pt-4 border-t border-slate-100 space-y-2">
-            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-bold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 text-sky-600" />
-              Quick Fill Demo Credentials
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('admin@dealflow360.com', 'AdminPassword123!')}
-                className="p-2.5 bg-sky-50/60 hover:bg-sky-100/80 border border-sky-200 rounded-xl text-left text-slate-800 transition-colors"
-              >
-                <div className="font-bold text-sky-900 text-xs">System Admin</div>
-                <div className="text-[10px] font-mono text-slate-500 truncate">admin@dealflow360.com</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('alex.rep@dealflow360.com', 'SalesRepPass123!')}
-                className="p-2.5 bg-sky-50/60 hover:bg-sky-100/80 border border-sky-200 rounded-xl text-left text-slate-800 transition-colors"
-              >
-                <div className="font-bold text-sky-900 text-xs">Alex SalesRep</div>
-                <div className="text-[10px] font-mono text-slate-500 truncate">alex.rep@dealflow360.com</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('jordan.mgr@dealflow360.com', 'ManagerPass123!')}
-                className="p-2.5 bg-sky-50/60 hover:bg-sky-100/80 border border-sky-200 rounded-xl text-left text-slate-800 transition-colors"
-              >
-                <div className="font-bold text-sky-900 text-xs">Jordan Manager</div>
-                <div className="text-[10px] font-mono text-slate-500 truncate">jordan.mgr@dealflow360.com</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('fiona.fin@dealflow360.com', 'FinancePass123!')}
-                className="p-2.5 bg-sky-50/60 hover:bg-sky-100/80 border border-sky-200 rounded-xl text-left text-slate-800 transition-colors"
-              >
-                <div className="font-bold text-sky-900 text-xs">Fiona Finance</div>
-                <div className="text-[10px] font-mono text-slate-500 truncate">fiona.fin@dealflow360.com</div>
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-            <Link to="/register" className="hover:text-sky-600 transition-colors font-semibold">
-              Internal User Register &rarr;
-            </Link>
+          <div className="flex items-center justify-center text-xs text-slate-500 pt-2 border-t border-slate-100">
             <Link to="/portal/signup" className="hover:text-sky-600 transition-colors font-semibold">
               Customer Portal Signup &rarr;
             </Link>
