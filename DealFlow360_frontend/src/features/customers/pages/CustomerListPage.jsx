@@ -8,91 +8,88 @@ import { useParams } from 'react-router-dom';
 import { Users, Search, Plus, Building2, DollarSign, CheckCircle2, ShieldAlert, ArrowRight } from 'lucide-react';
 import { formatCurrencyUSD } from '../../analytics/types/analyticsTypes';
 
+import customerService from '../services/customerService';
+
 export function CustomerListPage() {
   const { id } = useParams();
   const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
-  const initialCustomers = [
-    {
-      id: 'CUST-001',
-      name: 'Apex Global Logistics Ltd',
-      industry: 'Supply Chain & Freight',
-      contactPerson: 'Robert Sterling',
-      email: 'procurement@apexlogistics.com',
-      phone: '+1 (555) 234-5678',
-      creditLimitUSD: 250000,
-      totalSpentUSD: 145800,
-      outstandingUSD: 95800,
-      ordersCount: 12,
-      status: 'ACTIVE',
-    },
-    {
-      id: 'CUST-002',
-      name: 'Titan Enterprise Tech Solutions',
-      industry: 'Enterprise Software & Cloud',
-      contactPerson: 'Amanda Vance',
-      email: 'purchasing@titanenterprisetech.com',
-      phone: '+1 (555) 876-5432',
-      creditLimitUSD: 150000,
-      totalSpentUSD: 82080,
-      outstandingUSD: 82080,
-      ordersCount: 8,
-      status: 'ACTIVE',
-    },
-    {
-      id: 'CUST-003',
-      name: 'Nexus Global Networks Corp',
-      industry: 'Telecommunications',
-      contactPerson: 'Marcus Chen',
-      email: 'vendor.management@nexusglobal.com',
-      phone: '+1 (555) 345-6789',
-      creditLimitUSD: 300000,
-      totalSpentUSD: 64000,
-      outstandingUSD: 0,
-      ordersCount: 6,
-      status: 'ACTIVE',
-    },
-    {
-      id: 'CUST-004',
-      name: 'Horizon Energy Systems',
-      industry: 'Renewable Utilities',
-      contactPerson: 'Elena Rostova',
-      email: 'b2b@horizonenergy.com',
-      phone: '+1 (555) 987-6543',
-      creditLimitUSD: 100000,
-      totalSpentUSD: 42000,
-      outstandingUSD: 12000,
-      ordersCount: 4,
-      status: 'INACTIVE',
-    },
-  ];
+  // Add Customer Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newCompany, setNewCompany] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newPhone, setNewPhone] = useState('');
+  const [newContactPerson, setNewContactPerson] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createError, setCreateError] = useState(null);
+
+  const reloadCustomers = async () => {
+    try {
+      setLoading(true);
+      const res = await customerService.getCustomers();
+      const data = Array.isArray(res) ? res : (res?.data || []);
+      const mapped = data.map((c) => ({
+        id: c.id || c.customerId || '',
+        name: c.name || c.companyName || '',
+        industry: c.industry || 'Enterprise B2B',
+        contactPerson: c.primaryContactName || c.contactPerson || 'N/A',
+        email: c.email || c.portalEmail || 'N/A',
+        phone: c.phone || 'N/A',
+        creditLimitUSD: Number(c.creditLimitUSD || c.creditLimit || 0),
+        totalSpentUSD: Number(c.totalSpentUSD || c.totalSpent || 0),
+        outstandingUSD: Number(c.outstandingUSD || c.outstandingBalance || 0),
+        ordersCount: Number(c.ordersCount || 0),
+        status: c.status || 'ACTIVE',
+      }));
+      setCustomers(mapped);
+    } catch (err) {
+      console.error('Failed to load customers from backend:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('dealflow360_customers');
-      let loaded = initialCustomers;
-      if (saved) {
-        loaded = JSON.parse(saved);
-      } else {
-        localStorage.setItem('dealflow360_customers', JSON.stringify(initialCustomers));
-      }
-      setCustomers(loaded);
-      if (id) {
-        const found = loaded.find((c) => c.id === id);
-        if (found) setSelectedCustomer(found);
-      }
-    } catch (e) {
-      setCustomers(initialCustomers);
-    }
+    reloadCustomers();
   }, [id]);
+
+  const handleCreateCustomer = async (e) => {
+    e.preventDefault();
+    setCreateError(null);
+    if (!newCompany.trim()) {
+      setCreateError('Company / Business Name is required.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await customerService.createCustomer({
+        companyName: newCompany.trim(),
+        portalEmail: newEmail.trim(),
+        name: newCompany.trim(),
+        phone: newPhone.trim(),
+        contactPerson: newContactPerson.trim(),
+      });
+      setIsModalOpen(false);
+      setNewCompany('');
+      setNewEmail('');
+      setNewPhone('');
+      setNewContactPerson('');
+      await reloadCustomers();
+    } catch (err) {
+      setCreateError(err.message || 'Failed to create customer record.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const filteredCustomers = customers.filter((c) => {
     const matchesSearch =
       c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(c.id).toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.industry.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' || c.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -111,6 +108,14 @@ export function CustomerListPage() {
             Enterprise B2B client accounts, credit limits, total revenue history, and outstanding balances.
           </p>
         </div>
+
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#714B67] hover:bg-[#56384E] text-white text-xs font-bold rounded-xl shadow-lg shadow-purple-950/30 transition-all cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          Add Customer Account
+        </button>
       </div>
 
       {/* KPI Cards */}
@@ -270,6 +275,105 @@ export function CustomerListPage() {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add New Customer Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs">
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full shadow-2xl space-y-4 text-xs">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h4 className="text-base font-bold text-white flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-purple-400" />
+                Add New Customer Account
+              </h4>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-slate-400 hover:text-white font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {createError && (
+              <div className="p-3 bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-xl text-xs">
+                {createError}
+              </div>
+            )}
+
+            <form onSubmit={handleCreateCustomer} className="space-y-3.5">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  Company / Business Name <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Apex Global Logistics"
+                  value={newCompany}
+                  onChange={(e) => setNewCompany(e.target.value)}
+                  className="w-full h-9 px-3 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  Corporate Email
+                </label>
+                <input
+                  type="email"
+                  placeholder="purchasing@apexlogistics.com"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  className="w-full h-9 px-3 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                    Contact Person
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Sarah Connor"
+                    value={newContactPerson}
+                    onChange={(e) => setNewContactPerson(e.target.value)}
+                    className="w-full h-9 px-3 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    placeholder="+1 (555) 019-2834"
+                    value={newPhone}
+                    onChange={(e) => setNewPhone(e.target.value)}
+                    className="w-full h-9 px-3 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-[#714B67] hover:bg-[#56384E] text-white rounded-xl font-bold shadow-lg transition cursor-pointer disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Creating...' : 'Create Account'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

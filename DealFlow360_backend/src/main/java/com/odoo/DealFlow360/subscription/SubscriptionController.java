@@ -49,6 +49,24 @@ public class SubscriptionController {
         return ResponseEntity.ok(subscriptionService.findAllPlans());
     }
 
+    @GetMapping
+    public ResponseEntity<List<Subscription>> getAllSubscriptions() {
+        return ResponseEntity.ok(subscriptionService.findAllSubscriptions());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getSubscriptionById(@PathVariable Long id) {
+        return subscriptionService.findSubscriptionById(id)
+                .map(sub -> {
+                    List<SubscriptionBillingSchedule> schedules = subscriptionService.findSchedulesBySubscriptionId(id);
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("subscription", sub);
+                    response.put("billingSchedules", schedules);
+                    return ResponseEntity.ok((Object) response);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping
     public ResponseEntity<?> createSubscription(@RequestBody CreateSubscriptionRequest request) {
         if (request == null || request.customerId == null || request.planId == null) {

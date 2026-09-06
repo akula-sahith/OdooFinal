@@ -81,6 +81,13 @@ public class InventoryService {
         return Collections.emptyList();
     }
 
+    public List<Stock> findAllStock() {
+        if (stockRepository != null) {
+            return stockRepository.findAll();
+        }
+        return Collections.emptyList();
+    }
+
     public int getAvailableStockForProduct(Long productId) {
         List<Stock> stocks = findStockByProductId(productId);
         return inventoryEngine.calculateTotalAvailableStock(stocks);

@@ -23,28 +23,28 @@ export const OrdersPlaceholder = () => {
   });
   const [selectedOrderForInventory, setSelectedOrderForInventory] = useState(null);
 
-  // Load from LocalStorage (ZERO PRE-SEEDED DUMMY DATA)
+  // Load from Backend REST API
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('dealflow360_orders');
-      if (saved) {
-        setOrders(JSON.parse(saved));
-      } else {
+    async function fetchBackendOrders() {
+      try {
+        const { apiClient } = await import('../../services/api/apiClient');
+        const res = await apiClient.get('/orders');
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        const mapped = list.map(o => ({
+          id: o.orderNumber || `ORD-${o.id}`,
+          customerName: o.customerName || `Customer #${o.customerId}`,
+          totalAmount: Number(o.totalAmount || 0),
+          stage: o.status || 'Processing',
+          createdDate: o.createdAt ? new Date(o.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
+        }));
+        setOrders(mapped);
+      } catch (e) {
+        console.error('Failed fetching orders in OrdersPlaceholder:', e);
         setOrders([]);
       }
-    } catch (e) {
-      setOrders([]);
     }
+    fetchBackendOrders();
   }, []);
-
-  const saveOrders = (newList) => {
-    setOrders(newList);
-    try {
-      localStorage.setItem('dealflow360_orders', JSON.stringify(newList));
-    } catch (e) {
-      // ignore
-    }
-  };
 
   const handleCreateOrder = (e) => {
     e.preventDefault();

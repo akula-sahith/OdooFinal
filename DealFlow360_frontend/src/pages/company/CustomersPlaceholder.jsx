@@ -37,28 +37,32 @@ export const CustomersPlaceholder = () => {
     return { tier: 'Standard B2B Tier', discount: '0%', badgeColor: 'bg-slate-100 text-slate-600 border-slate-200' };
   };
 
-  // Load from LocalStorage (ZERO PRE-SEEDED DUMMY DATA)
+  // Load from Backend REST API
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('dealflow360_customers');
-      if (saved) {
-        setCustomers(JSON.parse(saved));
-      } else {
+    async function fetchBackendCustomers() {
+      try {
+        const { customerService } = await import('../../features/customers/services/customerService');
+        const res = await customerService.getCustomers();
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        const mapped = list.map(c => ({
+          id: `CUST-${c.id}`,
+          companyName: c.companyName || c.name || `Customer #${c.id}`,
+          contactName: c.contactName || 'Primary Contact',
+          email: c.email || '',
+          phone: c.phone || '',
+          taxId: c.taxId || 'TAX-VALIDATED',
+          totalOrdersAmount: Number(c.totalOrdersAmount || 0),
+          totalPurchasedUnits: Number(c.totalPurchasedUnits || 0),
+          source: 'System Account',
+        }));
+        setCustomers(mapped);
+      } catch (e) {
+        console.error('Failed fetching customers in CustomersPlaceholder:', e);
         setCustomers([]);
       }
-    } catch (e) {
-      setCustomers([]);
     }
+    fetchBackendCustomers();
   }, []);
-
-  const saveCustomers = (newList) => {
-    setCustomers(newList);
-    try {
-      localStorage.setItem('dealflow360_customers', JSON.stringify(newList));
-    } catch (e) {
-      // ignore
-    }
-  };
 
   const handleCreateCustomer = (e) => {
     e.preventDefault();

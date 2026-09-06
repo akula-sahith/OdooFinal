@@ -30,10 +30,16 @@ class AuthService {
 
   // Base HTTP Request Wrapper with HttpOnly Cookie credentials support
   async request(endpoint, options = {}) {
-    const url = `${this.baseUrl}${endpoint}`;
+    let cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    if (!cleanEndpoint.startsWith('/api') && !cleanEndpoint.startsWith('/actuator')) {
+      cleanEndpoint = `/api${cleanEndpoint}`;
+    }
+    const url = `${this.baseUrl}${cleanEndpoint}`;
+    const token = localStorage.getItem('dealflow360_auth_token');
     const headers = {
       'Content-Type': 'application/json',
       Accept: 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     };
 
@@ -41,26 +47,43 @@ class AuthService {
       const response = await fetch(url, {
         ...options,
         headers,
-        credentials: 'include', // Supports HttpOnly + Secure cookies
+        credentials: 'include',
       });
 
-      const data = await response.json().catch(() => ({}));
+      let data = {};
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json().catch(() => ({}));
+      } else {
+        const text = await response.text().catch(() => '');
+        data = { message: text || response.statusText };
+      }
 
       if (!response.ok) {
-        const error = new Error(data.message || 'Authentication request failed');
+        const fallbackMsg = response.status === 409
+          ? 'An account with this email address already exists. Please sign in instead.'
+          : 'Authentication request failed';
+        const error = new Error(data.message || fallbackMsg);
         error.code = data.code || this.mapStatusToErrorCode(response.status);
         error.status = response.status;
         error.details = data.details;
         throw error;
       }
 
+      if (data && data.token) {
+        try {
+          localStorage.setItem('dealflow360_auth_token', data.token);
+        } catch (e) {
+          /* ignore */
+        }
+      }
+
       return data;
     } catch (err) {
-      if (err.code) throw err;
-      
-      // Fallback for API integration readiness prior to live backend connection
-      console.warn(`[AuthService] ${url} endpoint offline or pending backend integration. Using integration-ready contract wrapper.`);
-      return this.handleIntegrationFallback(endpoint, options);
+      if (err.code || err.status) throw err;
+      const networkErr = new Error('Backend service offline or unreachable. Please check server connection.');
+      networkErr.code = 'SERVER_UNAVAILABLE';
+      throw networkErr;
     }
   }
 
@@ -68,6 +91,8 @@ class AuthService {
     switch (status) {
       case 401: return 'INVALID_CREDENTIALS';
       case 403: return 'UNAUTHORIZED';
+      case 409: return 'USER_ALREADY_EXISTS';
+      case 422: return 'VALIDATION_ERROR';
       case 429: return 'TOO_MANY_ATTEMPTS';
       default: return 'SERVER_UNAVAILABLE';
     }
@@ -223,12 +248,33 @@ class AuthService {
 
   // 2. POST /auth/logout
   async logout() {
-    return await this.request('/auth/logout', { method: 'POST' });
+    try {
+      localStorage.removeItem('dealflow360_auth_token');
+      localStorage.removeItem('dealflow360_user');
+    } catch (e) {}
+    try {
+      return await this.request('/auth/logout', { method: 'POST' });
+    } catch (e) {
+      return { success: true };
+    }
   }
 
   // 3. GET /auth/me
   async getCurrentUser() {
-    return await this.request('/auth/me');
+    const token = localStorage.getItem('dealflow360_auth_token');
+    if (!token) return null;
+    try {
+      const res = await this.request('/auth/me');
+      if (!res) return null;
+      return res.user ? res : { user: res };
+    } catch (err) {
+      if (err.status === 401 || err.status === 403) {
+        try {
+          localStorage.removeItem('dealflow360_auth_token');
+        } catch (e) {}
+      }
+      return null;
+    }
   }
 
   // 4. POST /auth/customer/signup

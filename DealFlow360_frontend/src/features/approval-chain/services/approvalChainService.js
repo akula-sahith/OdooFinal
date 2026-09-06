@@ -1,7 +1,4 @@
 import { apiClient } from '../../../services/api/apiClient';
-import { APPROVAL_CHAIN_DEFAULT_LEVELS } from '../types/approvalChainTypes';
-
-let mockApprovalChainStore = [...APPROVAL_CHAIN_DEFAULT_LEVELS];
 
 /**
  * Approval Chain API Service
@@ -12,33 +9,31 @@ export const approvalChainService = {
    * Fetch current company approval chain sequence.
    */
   async getApprovalChain() {
-    try {
-      return await apiClient.get('/approval-chain');
-    } catch (err) {
-      console.warn('[approvalChainService] Backend API offline. Operating in preview mode.');
-      return {
-        data: [...mockApprovalChainStore],
-        updatedAt: new Date().toISOString(),
-      };
-    }
+    return await apiClient.get('/approval-rules');
+  },
+
+  /**
+   * Create an approval chain rule.
+   */
+  async createApprovalRule(ruleData) {
+    return await apiClient.post('/approval-rules', ruleData);
   },
 
   /**
    * Update full company approval chain sequence.
    */
   async updateApprovalChain(chainData) {
-    try {
-      return await apiClient.put('/approval-chain', { levels: chainData });
-    } catch (err) {
-      console.warn('[approvalChainService] Backend API offline. Updating approval chain in preview store.');
-      mockApprovalChainStore = Array.isArray(chainData) ? [...chainData] : [...(chainData?.levels || [])];
-      return {
-        data: [...mockApprovalChainStore],
-        updatedAt: new Date().toISOString(),
-        message: 'Approval chain governance sequence updated successfully.',
-      };
-    }
+    return await apiClient.put('/approval-rules', { levels: chainData });
+  },
+
+  /**
+   * Delete an approval rule.
+   */
+  async deleteApprovalRule(id) {
+    if (!id) throw new Error('Rule ID is required.');
+    return await apiClient.delete(`/approval-rules/${id}`);
   },
 };
 
 export default approvalChainService;
+

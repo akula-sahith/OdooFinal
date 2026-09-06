@@ -84,6 +84,16 @@ public class BillingController {
         }
     }
 
+    @GetMapping("/invoices")
+    public ResponseEntity<List<Invoice>> getAllInvoices() {
+        return ResponseEntity.ok(billingService.findAllInvoices());
+    }
+
+    @GetMapping("/payments")
+    public ResponseEntity<List<Payment>> getAllPayments() {
+        return ResponseEntity.ok(billingService.findAllPayments());
+    }
+
     @GetMapping("/invoices/{id}")
     public ResponseEntity<?> getInvoiceById(@PathVariable Long id) {
         return billingService.findInvoiceById(id)

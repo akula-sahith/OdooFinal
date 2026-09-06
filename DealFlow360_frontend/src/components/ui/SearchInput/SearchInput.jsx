@@ -9,6 +9,7 @@ export const SearchInput = ({
   value: externalValue,
   onChange,
   onSearch,
+  onClear: externalOnClear,
   placeholder = 'Search records...',
   isLoading = false,
   debounceMs = 300,

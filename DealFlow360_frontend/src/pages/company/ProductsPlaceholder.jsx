@@ -25,28 +25,30 @@ export const ProductsPlaceholder = () => {
     moq: '1',
   });
 
-  // Load from LocalStorage (ZERO PRE-SEEDED DUMMY DATA)
+  // Load from Backend REST API
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('dealflow360_products');
-      if (saved) {
-        setProducts(JSON.parse(saved));
-      } else {
+    async function fetchBackendProducts() {
+      try {
+        const { productService } = await import('../../features/products/services/productService');
+        const res = await productService.getProducts();
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        const mapped = list.map(p => ({
+          id: p.sku || `SKU-${p.id}`,
+          name: p.name,
+          category: p.categoryName || 'Hardware',
+          price: Number(p.listPrice || p.price || 0),
+          unit: 'Unit',
+          moq: 1,
+          status: 'In Stock',
+        }));
+        setProducts(mapped);
+      } catch (e) {
+        console.error('Failed fetching products in ProductsPlaceholder:', e);
         setProducts([]);
       }
-    } catch (e) {
-      setProducts([]);
     }
+    fetchBackendProducts();
   }, []);
-
-  const saveProducts = (newList) => {
-    setProducts(newList);
-    try {
-      localStorage.setItem('dealflow360_products', JSON.stringify(newList));
-    } catch (e) {
-      // ignore
-    }
-  };
 
   const handleCreateProduct = (e) => {
     e.preventDefault();

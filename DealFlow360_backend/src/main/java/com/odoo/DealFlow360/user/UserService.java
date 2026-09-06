@@ -10,7 +10,8 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
- * Business service handling User domain operations, validation, Sales Team assignment semantics,
+ * Business service handling User domain operations, validation, Sales Team
+ * assignment semantics,
  * and JDBC repository integration.
  */
 @Service
@@ -54,8 +55,10 @@ public class UserService {
      * @param createdAt    Creation timestamp (defaults to now if null)
      * @return Validated User instance
      */
-    public User createUser(Long id, String name, String email, String passwordHash, String role, Long teamId, Instant createdAt) {
-        User user = new User(id, name, email, passwordHash, role, teamId, createdAt != null ? createdAt : Instant.now());
+    public User createUser(Long id, String name, String email, String passwordHash, String role, Long teamId,
+            Instant createdAt) {
+        User user = new User(id, name, email, passwordHash, role, teamId,
+                createdAt != null ? createdAt : Instant.now());
         validateUser(user);
         return user;
     }

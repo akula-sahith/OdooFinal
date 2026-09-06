@@ -21,28 +21,29 @@ export const UsersPlaceholder = () => {
     department: 'Sales Operations',
   });
 
-  // Load from LocalStorage (ZERO PRE-SEEDED DUMMY USERS)
+  // Load from Backend REST API
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('dealflow360_users');
-      if (saved) {
-        setUsers(JSON.parse(saved));
-      } else {
+    async function fetchBackendUsers() {
+      try {
+        const { userService } = await import('../../features/users/services/userService');
+        const res = await userService.getUsers();
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        const mapped = list.map(u => ({
+          id: u.id,
+          fullName: u.name || u.email,
+          email: u.email,
+          role: u.role || 'Salesperson',
+          department: u.department || 'Sales Operations',
+          status: 'Active',
+        }));
+        setUsers(mapped);
+      } catch (e) {
+        console.error('Failed fetching users in UsersPlaceholder:', e);
         setUsers([]);
       }
-    } catch (e) {
-      setUsers([]);
     }
+    fetchBackendUsers();
   }, []);
-
-  const saveUsers = (newList) => {
-    setUsers(newList);
-    try {
-      localStorage.setItem('dealflow360_users', JSON.stringify(newList));
-    } catch (e) {
-      // ignore
-    }
-  };
 
   const handleCreateUser = (e) => {
     e.preventDefault();

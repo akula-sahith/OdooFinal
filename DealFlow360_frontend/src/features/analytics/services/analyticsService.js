@@ -46,60 +46,34 @@ export const analyticsService = {
    * Fetch main executive analytics dashboard KPIs & trends
    */
   async getDashboardMetrics(params = {}) {
-    const { timeRange = '30d', role = 'ADMIN' } = params;
     try {
-      const res = await apiClient.get('/analytics/dashboard', { params });
-      if (res && res.data) return res.data;
+      const stats = await apiClient.get('/dashboard/stats');
+      const invoices = await invoiceService.getInvoices();
+      const totalInvoicedUSD = invoices.reduce(
+        (sum, i) => sum + convertToBaseUSD(i.grandTotal, i.currency),
+        0
+      );
+      const totalPaidUSD = invoices.reduce(
+        (sum, i) => sum + convertToBaseUSD(i.amountPaid, i.currency),
+        0
+      );
+
+      return {
+        totalQuotations: stats.openQuotationsCount || 0,
+        acceptedQuotations: stats.totalOrdersCount || 0,
+        orders: stats.totalOrdersCount || 0,
+        revenueUSD: Number(stats.totalOrderRevenue || totalInvoicedUSD || 0),
+        totalPaidUSD: totalPaidUSD || 0,
+        outstandingUSD: Math.max(0, Number(stats.totalOrderRevenue || 0) - totalPaidUSD),
+        pendingApprovals: stats.pendingApprovalsCount || 0,
+        atRiskDeals: stats.atRiskDealsCount || 0,
+        recentActivity: stats.recentActivity || [],
+        currency: 'USD',
+      };
     } catch (e) {
-      console.warn('[analyticsService] Backend offline. Synthesizing dashboard metrics from local stores.');
+      console.error('[analyticsService] Failed fetching dashboard stats from backend:', e);
+      throw e;
     }
-
-    const invoices = await invoiceService.getInvoices();
-    const payments = await paymentService.getPayments();
-    const shipments = await fulfillmentService.getShipments();
-
-    const totalQuotationValue = 350000;
-    const acceptedQuotationValue = 227880;
-    const totalQuotationsCount = 248;
-    const acceptedQuotationsCount = 142;
-    const ordersCount = 96;
-
-    const totalInvoicedUSD = invoices.reduce(
-      (sum, i) => sum + convertToBaseUSD(i.grandTotal, i.currency),
-      0
-    );
-    const totalPaidUSD = invoices.reduce(
-      (sum, i) => sum + convertToBaseUSD(i.amountPaid, i.currency),
-      0
-    );
-    const outstandingUSD = invoices.reduce(
-      (sum, i) => sum + convertToBaseUSD(i.amountDue, i.currency),
-      0
-    );
-
-    const conversionRate = Math.round((acceptedQuotationsCount / totalQuotationsCount) * 100);
-    const avgOrderValue = Math.round(acceptedQuotationValue / ordersCount);
-
-    return {
-      totalQuotations: totalQuotationsCount,
-      acceptedQuotations: acceptedQuotationsCount,
-      orders: ordersCount,
-      revenueUSD: totalInvoicedUSD || 227880,
-      totalPaidUSD: totalPaidUSD || 50000,
-      outstandingUSD: outstandingUSD || 177880,
-      conversionRate,
-      avgOrderValue,
-      pendingApprovals: 4,
-      currency: 'USD',
-      periodDistribution: [
-        { label: 'Jan', value: 42000 },
-        { label: 'Feb', value: 51000 },
-        { label: 'Mar', value: 64000 },
-        { label: 'Apr', value: 72000 },
-        { label: 'May', value: 89000 },
-        { label: 'Jun', value: 95000 },
-      ],
-    };
   },
 
   /**

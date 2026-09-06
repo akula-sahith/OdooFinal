@@ -7,70 +7,47 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ShoppingBag, Search, Plus, CheckCircle2, Clock, Truck, FileText } from 'lucide-react';
 import { formatCurrencyUSD } from '../../analytics/types/analyticsTypes';
+import { apiClient } from '../../../services/api/apiClient';
 
 export function OrderListPage() {
   const { id } = useParams();
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [stageFilter, setStageFilter] = useState('ALL');
   const [selectedOrder, setSelectedOrder] = useState(null);
 
-  const initialOrders = [
-    {
-      id: 'SO-2026-0101',
-      sourceQuotationId: 'QT-2026-0042',
-      customerName: 'Apex Global Logistics Ltd',
-      customerId: 'CUST-001',
-      totalAmountUSD: 145800,
-      stage: 'PROCESSING',
-      createdDate: '2026-09-02',
-      itemsCount: 3,
-      items: [
-        { name: 'Industrial Water Filtration System', qty: 2, price: 45000 },
-        { name: 'Heavy Duty Pump Unit X2', qty: 4, price: 13950 },
-      ],
-    },
-    {
-      id: 'SO-2026-0102',
-      sourceQuotationId: 'QT-2026-0038',
-      customerName: 'Titan Enterprise Tech Solutions',
-      customerId: 'CUST-002',
-      totalAmountUSD: 82080,
-      stage: 'FULFILLED',
-      createdDate: '2026-09-01',
-      itemsCount: 1,
-      items: [{ name: 'Precision CNC Milling Station', qty: 1, price: 82080 }],
-    },
-    {
-      id: 'SO-2026-0103',
-      sourceQuotationId: 'QT-2026-0029',
-      customerName: 'Nexus Global Networks Corp',
-      customerId: 'CUST-003',
-      totalAmountUSD: 64000,
-      stage: 'COMPLETED',
-      createdDate: '2026-08-28',
-      itemsCount: 2,
-      items: [{ name: 'Commercial Solar Generator 500kW', qty: 1, price: 64000 }],
-    },
-  ];
-
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('dealflow360_orders');
-      let loaded = initialOrders;
-      if (saved && JSON.parse(saved).length > 0) {
-        loaded = JSON.parse(saved);
-      } else {
-        localStorage.setItem('dealflow360_orders', JSON.stringify(initialOrders));
+    async function fetchOrders() {
+      try {
+        setLoading(true);
+        const res = await apiClient.get('/orders');
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        const mapped = list.map(o => ({
+          id: o.orderNumber || `ORD-${o.id}`,
+          rawId: o.id,
+          sourceQuotationId: o.quotationId ? `QTN-${o.quotationId}` : 'DIRECT',
+          customerName: o.customerName || `Customer #${o.customerId}`,
+          customerId: o.customerId,
+          totalAmountUSD: Number(o.totalAmount || 0),
+          stage: o.status || 'CONFIRMED',
+          createdDate: o.createdAt ? new Date(o.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          itemsCount: o.itemsCount || 1,
+        }));
+        setOrders(mapped);
+        if (id) {
+          const found = mapped.find((o) => String(o.id) === String(id) || String(o.rawId) === String(id));
+          if (found) setSelectedOrder(found);
+        }
+      } catch (err) {
+        console.error('Failed to fetch orders from backend:', err);
+        setError(err.message || 'Failed to load sales orders.');
+      } finally {
+        setLoading(false);
       }
-      setOrders(loaded);
-      if (id) {
-        const found = loaded.find((o) => o.id === id);
-        if (found) setSelectedOrder(found);
-      }
-    } catch (e) {
-      setOrders(initialOrders);
     }
+    fetchOrders();
   }, [id]);
 
   const filteredOrders = orders.filter((o) => {

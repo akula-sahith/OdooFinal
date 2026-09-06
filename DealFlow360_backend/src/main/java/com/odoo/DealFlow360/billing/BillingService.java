@@ -140,6 +140,20 @@ public class BillingService {
         return Optional.empty();
     }
 
+    public List<Invoice> findAllInvoices() {
+        if (invoiceRepository != null) {
+            return invoiceRepository.findAll();
+        }
+        return Collections.emptyList();
+    }
+
+    public List<Payment> findAllPayments() {
+        if (paymentRepository != null) {
+            return paymentRepository.findAll();
+        }
+        return Collections.emptyList();
+    }
+
     public List<Invoice> findInvoicesByCustomerId(Long customerId) {
         if (invoiceRepository != null && customerId != null) {
             return invoiceRepository.findByCustomerId(customerId);

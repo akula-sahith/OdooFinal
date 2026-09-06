@@ -21,7 +21,11 @@ export const apiClient = {
   },
 
   async request(endpoint, options = {}) {
-    const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+    let cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    if (!cleanEndpoint.startsWith('/api') && !cleanEndpoint.startsWith('/actuator')) {
+      cleanEndpoint = `/api${cleanEndpoint}`;
+    }
+    const url = `${this.baseUrl}${cleanEndpoint}`;
     
     // Retrieve session token if stored in auth state
     let token = null;

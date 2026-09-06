@@ -164,7 +164,7 @@ public class QuotationService {
                 valid = "APPROVED".equals(target) || "REJECTED".equals(target) || "RETURNED_FOR_REVISION".equals(target);
                 break;
             case "APPROVED":
-                valid = "CONFIRMED".equals(target) || "REJECTED".equals(target) || "RETURNED_FOR_REVISION".equals(target) || "UNDER_NEGOTIATION".equals(target);
+                valid = "SENT".equals(target) || "CONFIRMED".equals(target) || "REJECTED".equals(target) || "RETURNED_FOR_REVISION".equals(target) || "UNDER_NEGOTIATION".equals(target);
                 break;
             case "RETURNED_FOR_REVISION":
                 valid = "DRAFT".equals(target) || "SENT".equals(target) || "PENDING_APPROVAL".equals(target);

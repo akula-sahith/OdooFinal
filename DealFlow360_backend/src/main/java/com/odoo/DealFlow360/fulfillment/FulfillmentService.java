@@ -164,11 +164,75 @@ public class FulfillmentService {
         return fo;
     }
 
+    @Transactional
+    public FulfillmentOrder overrideFulfillmentSplit(Long orderId, List<ManualSplitItem> items) {
+        if (orderRepository == null || orderLineRepository == null || inventoryService == null) {
+            throw new IllegalStateException("Services not initialized");
+        }
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + orderId));
+
+        List<FulfillmentOrder> existingFos = findFulfillmentOrdersByOrderId(orderId);
+        FulfillmentOrder fo;
+        if (existingFos.isEmpty()) {
+            fo = new FulfillmentOrder(null, order.getId(), "MANUAL_OVERRIDE", Instant.now(), null);
+            if (fulfillmentOrderRepository != null) fo = fulfillmentOrderRepository.save(fo);
+        } else {
+            fo = existingFos.get(0);
+            fo.setStatus("MANUAL_OVERRIDE");
+            if (fulfillmentOrderRepository != null) fo = fulfillmentOrderRepository.save(fo);
+        }
+
+        if (items != null) {
+            for (ManualSplitItem item : items) {
+                OrderLine line = orderLineRepository.findById(item.orderLineId).orElse(null);
+                if (line != null && item.warehouseId != null && item.quantityAllocated != null && item.quantityAllocated > 0) {
+                    FulfillmentSplit split = new FulfillmentSplit(
+                            null,
+                            fo.getId(),
+                            line.getId(),
+                            item.warehouseId,
+                            item.quantityAllocated,
+                            0,
+                            null
+                    );
+                    if (fulfillmentSplitRepository != null) {
+                        fulfillmentSplitRepository.save(split);
+                    }
+                    inventoryService.reserveStock(item.warehouseId, line.getProductId(), item.quantityAllocated);
+                }
+            }
+        }
+
+        return fo;
+    }
+
+    public static class ManualSplitItem {
+        public Long orderLineId;
+        public Long warehouseId;
+        public Integer quantityAllocated;
+    }
+
     public Optional<Order> findOrderById(Long id) {
         if (orderRepository != null && id != null) {
             return orderRepository.findById(id);
         }
         return Optional.empty();
+    }
+
+    public Optional<Order> findOrderByQuotationId(Long quotationId) {
+        if (orderRepository != null && quotationId != null) {
+            return orderRepository.findByQuotationId(quotationId);
+        }
+        return Optional.empty();
+    }
+
+    public List<Order> findAllOrders() {
+        if (orderRepository != null) {
+            return orderRepository.findAll();
+        }
+        return Collections.emptyList();
     }
 
     public List<OrderLine> findOrderLinesByOrderId(Long orderId) {

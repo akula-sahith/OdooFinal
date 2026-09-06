@@ -115,6 +115,13 @@ public class SubscriptionService {
         return Collections.emptyList();
     }
 
+    public List<Subscription> findAllSubscriptions() {
+        if (subscriptionRepository != null) {
+            return subscriptionRepository.findAll();
+        }
+        return Collections.emptyList();
+    }
+
     public List<SubscriptionBillingSchedule> findSchedulesBySubscriptionId(Long subscriptionId) {
         if (scheduleRepository != null && subscriptionId != null) {
             return scheduleRepository.findBySubscriptionId(subscriptionId);

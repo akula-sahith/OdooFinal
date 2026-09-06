@@ -17,10 +17,11 @@ export const ProtectedCompanyRoute = ({ children, requiredPermission }) => {
   }
 
   // Redirect to company staff login if not authenticated or not staff portal
-  if (!isAuthenticated || !user || user.portal !== 'company') {
+  const isStaff = user && (user.portal === 'company' || ['Admin', 'Sales Manager', 'Salesperson', 'Finance', 'ADMIN', 'SALES_MANAGER', 'SALES_REP', 'FINANCE'].includes(user.role));
+  if (!isAuthenticated || !user || !isStaff) {
     return (
       <Navigate
-        to="/m-entry-z7829a/login"
+        to="/login"
         state={{ from: location.pathname }}
         replace
       />

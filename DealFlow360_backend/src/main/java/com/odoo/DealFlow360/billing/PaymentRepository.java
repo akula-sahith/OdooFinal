@@ -5,7 +5,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,11 +31,12 @@ public class PaymentRepository {
         }
 
         if (payment.getId() == null) {
-            String sql = "INSERT INTO payments (invoice_id, payment_method, amount, status, transaction_reference, processed_at) " +
-                         "VALUES (?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO payments (invoice_id, payment_method, amount, status, transaction_reference, processed_at) "
+                    +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
+                PreparedStatement ps = connection.prepareStatement(sql, new String[] { "id" });
                 ps.setLong(1, payment.getInvoiceId());
                 ps.setString(2, payment.getPaymentMethod() != null ? payment.getPaymentMethod() : "CREDIT_CARD");
                 ps.setBigDecimal(3, payment.getAmount());
@@ -73,6 +73,11 @@ public class PaymentRepository {
     public List<Payment> findByInvoiceId(Long invoiceId) {
         String sql = "SELECT id, invoice_id, payment_method, amount, status, transaction_reference, processed_at FROM payments WHERE invoice_id = ? ORDER BY id";
         return jdbcTemplate.query(sql, rowMapper, invoiceId);
+    }
+
+    public List<Payment> findAll() {
+        String sql = "SELECT id, invoice_id, payment_method, amount, status, transaction_reference, processed_at FROM payments ORDER BY id DESC";
+        return jdbcTemplate.query(sql, rowMapper);
     }
 
     public void deleteById(Long id) {

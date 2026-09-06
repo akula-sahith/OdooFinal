@@ -35,7 +35,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String email = jwtUtil.getEmailFromToken(token);
                 String role = jwtUtil.getRoleFromToken(token);
                 if (email != null && role != null) {
-                    String authority = role.startsWith("ROLE_") ? role : "ROLE_" + role;
+                    String roleUpper = role.toUpperCase();
+                    String authority = roleUpper.startsWith("ROLE_") ? roleUpper : "ROLE_" + roleUpper;
                     UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                             email, null, List.of(new SimpleGrantedAuthority(authority))
                     );

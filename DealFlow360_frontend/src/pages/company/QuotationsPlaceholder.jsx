@@ -24,28 +24,29 @@ export const QuotationsPlaceholder = () => {
     validDays: '30',
   });
 
-  // Load from LocalStorage (ZERO PRE-SEEDED DUMMY DATA)
+  // Load from Backend REST API
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('dealflow360_quotations');
-      if (saved) {
-        setQuotations(JSON.parse(saved));
-      } else {
+    async function fetchBackendQuotations() {
+      try {
+        const { quotationService } = await import('../../features/quotations/services/quotationService');
+        const res = await quotationService.getQuotations();
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        const mapped = list.map(q => ({
+          id: q.quotationNumber || `QT-${q.id}`,
+          title: q.title || `Commercial Quotation #${q.id}`,
+          customerName: q.customerName || `Customer #${q.customerId}`,
+          discountPct: Number(q.totalDiscount || 0),
+          totalAmount: Number(q.grandTotal || q.totalAmount || 0),
+          status: q.status || 'Draft',
+        }));
+        setQuotations(mapped);
+      } catch (e) {
+        console.error('Failed fetching quotations in QuotationsPlaceholder:', e);
         setQuotations([]);
       }
-    } catch (e) {
-      setQuotations([]);
     }
+    fetchBackendQuotations();
   }, []);
-
-  const saveQuotations = (newList) => {
-    setQuotations(newList);
-    try {
-      localStorage.setItem('dealflow360_quotations', JSON.stringify(newList));
-    } catch (e) {
-      // ignore
-    }
-  };
 
   const handleCreateQuotation = (e) => {
     e.preventDefault();

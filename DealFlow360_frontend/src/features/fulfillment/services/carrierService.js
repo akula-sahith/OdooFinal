@@ -3,7 +3,7 @@
  * Phase 13 — DealFlow360
  */
 
-const STORAGE_KEY = 'dealflow360_carriers';
+import { apiClient } from '../../../services/api/apiClient';
 
 const INITIAL_CARRIERS = [
   {
@@ -44,87 +44,69 @@ const INITIAL_CARRIERS = [
   },
 ];
 
-const getStoredCarriers = () => {
-  try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    if (data) return JSON.parse(data);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_CARRIERS));
-    return INITIAL_CARRIERS;
-  } catch (e) {
-    return INITIAL_CARRIERS;
-  }
-};
-
-const saveCarriers = (carriers) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(carriers));
-  } catch (e) {
-    console.error('Failed to store carriers', e);
-  }
-};
-
 export const carrierService = {
   getCarriers: async (params = {}) => {
-    let carriers = getStoredCarriers();
-    if (params.status) {
-      carriers = carriers.filter((c) => c.status === params.status);
+    try {
+      const res = await apiClient.get('/fulfillment/carriers', { params });
+      return res.data?.carriers || res.data || INITIAL_CARRIERS;
+    } catch {
+      let carriers = [...INITIAL_CARRIERS];
+      if (params.status) carriers = carriers.filter((c) => c.status === params.status);
+      if (params.search) {
+        const q = params.search.toLowerCase();
+        carriers = carriers.filter(
+          (c) => c.name.toLowerCase().includes(q) || c.carrierCode.toLowerCase().includes(q)
+        );
+      }
+      return carriers;
     }
-    if (params.search) {
-      const q = params.search.toLowerCase();
-      carriers = carriers.filter(
-        (c) => c.name.toLowerCase().includes(q) || c.carrierCode.toLowerCase().includes(q)
-      );
-    }
-    return carriers;
   },
 
   getCarrierById: async (id) => {
-    const carriers = getStoredCarriers();
-    return carriers.find((c) => c.carrierId === id) || null;
+    try {
+      const res = await apiClient.get(`/fulfillment/carriers/${id}`);
+      return res.data;
+    } catch {
+      return INITIAL_CARRIERS.find((c) => c.carrierId === id) || null;
+    }
   },
 
   createCarrier: async (data) => {
-    const carriers = getStoredCarriers();
-    const newCarrier = {
-      carrierId: `CAR-${Math.floor(100 + Math.random() * 900)}`,
-      carrierCode: (data.carrierCode || 'CUSTOM').toUpperCase().replace(/\s+/g, '_'),
-      name: data.name,
-      status: data.status || 'ACTIVE',
-      trackingUrlTemplate: data.trackingUrlTemplate || '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    const updated = [newCarrier, ...carriers];
-    saveCarriers(updated);
-    return newCarrier;
+    try {
+      const res = await apiClient.post('/fulfillment/carriers', data);
+      return res.data;
+    } catch {
+      return {
+        carrierId: `CAR-${Math.floor(100 + Math.random() * 900)}`,
+        carrierCode: (data.carrierCode || 'CUSTOM').toUpperCase().replace(/\s+/g, '_'),
+        name: data.name,
+        status: data.status || 'ACTIVE',
+        trackingUrlTemplate: data.trackingUrlTemplate || '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    }
   },
 
   updateCarrier: async (id, data) => {
-    const carriers = getStoredCarriers();
-    const index = carriers.findIndex((c) => c.carrierId === id);
-    if (index === -1) throw new Error('Carrier not found');
-
-    const updatedCarrier = {
-      ...carriers[index],
-      ...data,
-      updatedAt: new Date().toISOString(),
-    };
-    carriers[index] = updatedCarrier;
-    saveCarriers(carriers);
-    return updatedCarrier;
+    try {
+      const res = await apiClient.put(`/fulfillment/carriers/${id}`, data);
+      return res.data;
+    } catch {
+      return { carrierId: id, ...data, updatedAt: new Date().toISOString() };
+    }
   },
 
   updateCarrierStatus: async (id, status) => {
     return carrierService.updateCarrier(id, { status });
   },
 
-  deleteCarrier: async (id, activeShipmentCount = 0) => {
-    if (activeShipmentCount > 0) {
-      throw new Error(`Cannot delete carrier ${id} because it is referenced by active shipments.`);
+  deleteCarrier: async (id) => {
+    try {
+      await apiClient.delete(`/fulfillment/carriers/${id}`);
+      return true;
+    } catch {
+      return true;
     }
-    const carriers = getStoredCarriers();
-    const filtered = carriers.filter((c) => c.carrierId !== id);
-    saveCarriers(filtered);
-    return true;
   },
 };

@@ -13,13 +13,18 @@ export const Button = forwardRef(({
   isLoading = false,
   loadingText,
   disabled = false,
-  leadingIcon: LeadingIcon,
-  trailingIcon: TrailingIcon,
+  leadingIcon: LeadingIconInput,
+  leftIcon: LeftIconInput,
+  icon: IconInput,
+  trailingIcon: TrailingIconInput,
+  rightIcon: RightIconInput,
   className = '',
   onClick,
   fullWidth = false,
   ...props
 }, ref) => {
+  const LeadingIcon = LeadingIconInput || LeftIconInput || IconInput;
+  const TrailingIcon = TrailingIconInput || RightIconInput;
   // Prevent click when loading or disabled
   const handleClick = (e) => {
     if (disabled || isLoading) {

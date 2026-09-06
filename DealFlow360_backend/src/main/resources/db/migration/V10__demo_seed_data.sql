@@ -73,7 +73,11 @@ ON CONFLICT (id) DO NOTHING;
 
 -- 11. UPSELL RULES
 INSERT INTO upsell_rules (id, base_product_id, suggested_product_id, is_promoted, min_margin_threshold) VALUES
-(1, 1, 2, TRUE, 20.00)
+(1, 1, 2, TRUE, 20.00),
+(2, 1, 4, FALSE, 15.00),
+(3, 3, 4, TRUE, 10.00),
+(4, 3, 2, FALSE, 12.00),
+(5, 4, 2, TRUE, 15.00)
 ON CONFLICT (id) DO NOTHING;
 
 -- 12. CATEGORY DISCOUNT CEILINGS

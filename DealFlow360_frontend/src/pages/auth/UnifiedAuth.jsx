@@ -88,14 +88,12 @@ export const UnifiedAuth = () => {
       const user = await login(loginEmail, loginPassword);
 
       // Smart Role-Based Redirection
-      if (
-        user &&
-        (user.portal === 'company' ||
-          ['Admin', 'Sales Manager', 'Salesperson'].includes(user.role))
-      ) {
-        navigate('/company/dashboard');
-      } else {
-        navigate('/c-entry-x9283f/workspace');
+      if (user) {
+        if (user.portal === 'customer' || user.role === 'Customer' || user.role === 'CUSTOMER') {
+          navigate('/customer/dashboard');
+        } else {
+          navigate('/company/dashboard');
+        }
       }
     } catch (err) {
       if (err.code === 'MFA_REQUIRED') {
@@ -184,32 +182,6 @@ export const UnifiedAuth = () => {
         contactEmail: signupForm.contactEmail,
         password: signupForm.password,
       });
-
-      // Local storage fallback for customer directory preview
-      try {
-        const saved = JSON.parse(localStorage.getItem('dealflow360_customers') || '[]');
-        const newCustomerRecord = {
-          id: `CUST-${Math.floor(1000 + Math.random() * 9000)}`,
-          companyName: signupForm.companyName,
-          contactName: signupForm.fullName,
-          email: signupForm.businessEmail,
-          phone: signupForm.phone,
-          taxId: 'TAX-PENDING',
-          creditLimit: 10000,
-          tier: 'Standard',
-          totalOrdersAmount: 0,
-          totalPurchasedUnits: 0,
-          source: 'Self-Registered',
-          status: 'Active',
-          createdDate: new Date().toLocaleDateString(),
-        };
-        localStorage.setItem(
-          'dealflow360_customers',
-          JSON.stringify([newCustomerRecord, ...saved])
-        );
-      } catch (err) {
-        // ignore
-      }
 
       setSignupStep(4);
     } catch (err) {

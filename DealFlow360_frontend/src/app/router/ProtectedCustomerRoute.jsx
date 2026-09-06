@@ -14,7 +14,8 @@ export const ProtectedCustomerRoute = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated || portal !== 'customer' || !user) {
+  const isCustomer = user && (portal === 'customer' || user.portal === 'customer' || user.role === 'Customer' || user.role === 'CUSTOMER');
+  if (!isAuthenticated || !user || !isCustomer) {
     return <Navigate to="/c-entry-x9283f/login" state={{ from: location }} replace />;
   }
 
